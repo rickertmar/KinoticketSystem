@@ -1,1 +1,1 @@
-# KinoticketSystem
+# Kinoticket System (Gruppe 1)

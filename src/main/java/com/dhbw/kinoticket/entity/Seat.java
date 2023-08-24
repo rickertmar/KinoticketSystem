@@ -17,4 +17,10 @@ public class Seat {
     private int seatRow;
     @Column(name = "number")
     private int number;
+
+    @Column(name = "xLoc") //relative X-Location in theatre
+    private int xLoc;
+
+    @Column(name = "yLoc")//relative Y-Location in theatre
+    private int yLoc;
 }

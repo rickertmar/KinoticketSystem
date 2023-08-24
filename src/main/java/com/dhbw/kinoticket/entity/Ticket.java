@@ -26,4 +26,12 @@ public class Ticket {
     @Column(name = "isBooked")
     private boolean isBooked;
 
+    @ManyToOne
+    @JoinColumn(name = "reservation_id")
+    private Reservation reservation;
+
+    @ManyToOne
+    @JoinColumn(name = "refund_id") // relation to Refund
+    private Refund refund;
+
 }

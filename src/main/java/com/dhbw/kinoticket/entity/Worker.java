@@ -11,10 +11,10 @@ public class Worker {
 
     @Id
     private Long id;
-    @Column(name = "username")
-    private String username;
-    @Column(name = "password")
-    private String password;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="user_id", referencedColumnName = "id", insertable = false, updatable = false)
+    private User user;
+
     @Column(name = "isAdmin")
     private boolean isAdmin;
 }

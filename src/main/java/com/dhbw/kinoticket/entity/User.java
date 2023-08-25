@@ -20,10 +20,4 @@ public class User {
     private String email;
     @Column(name = "password")
     private String password;
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="shippingLocation_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private LocationAddress shippingLocation;
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="billingLocation_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private LocationAddress billingLocation;
 }

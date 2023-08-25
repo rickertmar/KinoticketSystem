@@ -1,30 +1,39 @@
 package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.entity.User;
-import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.*;
 import com.dhbw.kinoticket.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
-@RestController()
-@CrossOrigin
+import java.util.List;
+
+@RestController
 @RequestMapping(value = "/users")
 public class UserController {
     private final UserService userService;
+    @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
-    @PostMapping("")
-    public User createUser(@RequestBody @Valid User userRequest) {
-        User user = new User();
-        user.setEmail(userRequest.getEmail());
-        user.setPassword(userRequest.getPassword());
-        user.setFirstName(userRequest.getFirstName());
-        user.setLastName(userRequest.getLastName());
-        this.userService.create(user);
-        return user;
+    @GetMapping
+    public List<User> getAllUsers(){
+        return userService.getAllUsers();
     }
-    @GetMapping("")
-    public Iterable<User> getAllUsers() {
-        return this.userService.findAll();
+    @GetMapping("/{id}")
+    public User getUserById(@PathVariable Long id){
+        return userService.getUserById(id);
     }
+    @GetMapping("/email/{email}")
+    public User getUserByEmail(@PathVariable String email){
+        return userService.getUserByEmail(email);
+    }
+    @PostMapping
+    public User createUser(@RequestBody User user){
+        return userService.saveUser(user);
+    }
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id){
+        userService.deleteUser(id);
+    }
+
 }

@@ -1,6 +1,8 @@
 package com.dhbw.kinoticket.controller;
 
+import com.dhbw.kinoticket.dao.CreateCinemaRequest;
 import com.dhbw.kinoticket.entity.Cinema;
+import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.service.CinemaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -18,12 +20,15 @@ public class CinemaController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<?> createCinema(@Valid @RequestBody Cinema cinemaRequest) { //@Valid for Validation and ResponseEntity<?> for a more specific response (? = variable response type)
+    public ResponseEntity<?> createCinema(
+            @Valid @RequestBody CreateCinemaRequest createCinemaRequest) { //@Valid for Validation and ResponseEntity<?> for a more specific response (? = variable response type)
         //error handling
         try {
-            Cinema cinema = new Cinema();
-            cinema.setName(cinemaRequest.getName());
-            cinema.setLocationAddress(cinemaRequest.getLocationAddress());
+            Cinema cinema = createCinemaRequest.getCinema();
+            LocationAddress locationAddress = createCinemaRequest.getLocationAddress();
+
+            cinema.setName(cinema.getName());
+            cinema.setLocationAddress(locationAddress);
 
             cinema = cinemaService.createCinema(cinema);
 

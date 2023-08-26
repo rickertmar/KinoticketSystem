@@ -19,5 +19,5 @@ public class LocationAddress {
     @Column(name = "country")
     private String country;
     @Column(name = "postcode")
-    private int postcode;
+    private String postcode;
 }

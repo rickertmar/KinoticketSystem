@@ -15,6 +15,6 @@ public class Cinema {
     @Column(name = "name")
     private String name;
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="location_address_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name="location_address_id", referencedColumnName = "id")
     private LocationAddress locationAddress;
 }

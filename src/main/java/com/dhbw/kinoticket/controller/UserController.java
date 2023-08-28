@@ -1,30 +1,21 @@
 package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.entity.User;
-import jakarta.validation.Valid;
+import com.dhbw.kinoticket.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import com.dhbw.kinoticket.service.UserService;
 
-@RestController()
-@CrossOrigin
+import java.util.List;
+import java.util.Optional;
+
+@RestController
 @RequestMapping(value = "/users")
+@RequiredArgsConstructor
 public class UserController {
-    private final UserService userService;
-    public UserController(UserService userService) {
-        this.userService = userService;
+    private final UserRepository userRepository;
+    @GetMapping(value = "/{email}")
+    public Optional<User> findByEmail(@PathVariable("email") String email){
+        return userRepository.findByEmail(email);
     }
-    @PostMapping("")
-    public User createUser(@RequestBody @Valid User userRequest) {
-        User user = new User();
-        user.setEmail(userRequest.getEmail());
-        user.setPassword(userRequest.getPassword());
-        user.setFirstName(userRequest.getFirstName());
-        user.setLastName(userRequest.getLastName());
-        this.userService.create(user);
-        return user;
-    }
-    @GetMapping("")
-    public Iterable<User> getAllUsers() {
-        return this.userService.findAll();
-    }
+
 }

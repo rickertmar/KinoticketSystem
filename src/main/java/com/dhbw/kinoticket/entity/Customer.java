@@ -12,12 +12,12 @@ public class Customer {
     @Id
     private Long id;
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="user_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name="user_id", referencedColumnName = "id")
     private User user;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="shippingLocation_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name="shippingLocation_id", referencedColumnName = "id")
     private LocationAddress shippingLocation;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="billingLocation_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name="billingLocation_id", referencedColumnName = "id")
     private LocationAddress billingLocation;
 }

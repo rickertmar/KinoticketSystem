@@ -20,4 +20,7 @@ public class LocationAddress {
     private String country;
     @Column(name = "postcode")
     private String postcode;
+
+    @OneToOne(mappedBy = "locationAddress")
+    private Cinema cinema;
 }

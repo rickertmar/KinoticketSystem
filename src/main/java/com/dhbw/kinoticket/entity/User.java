@@ -3,6 +3,7 @@ package com.dhbw.kinoticket.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -12,7 +13,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "User")
+@Entity(name = "_user")
 public class User implements UserDetails {
 
     @Id
@@ -22,18 +23,22 @@ public class User implements UserDetails {
     private String lastName;
     private String email;
     private String password;
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
+
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
-
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="shippingLocation_id", referencedColumnName = "id", insertable = false, updatable = false)
     private LocationAddress shippingLocation;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="billingLocation_id", referencedColumnName = "id", insertable = false, updatable = false)
     private LocationAddress billingLocation;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        return List.of(new SimpleGrantedAuthority(role.name()));
     }
 
     @Override

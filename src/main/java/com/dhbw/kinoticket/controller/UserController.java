@@ -1,8 +1,7 @@
 package com.dhbw.kinoticket.controller;
 
-import com.dhbw.kinoticket.entity.User;
-import com.dhbw.kinoticket.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -10,12 +9,11 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping(value = "/users")
-@RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
-    private final UserRepository userRepository;
-    @GetMapping(value = "/{email}")
-    public Optional<User> findByEmail(@PathVariable("email") String email){
-        return userRepository.findByEmail(email);
+    @GetMapping("")
+    @PreAuthorize("hasAuthority('admin:read')")
+    public String test(){
+        return "only Admin can see this page";
     }
-
 }

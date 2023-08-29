@@ -2,7 +2,6 @@ package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.dao.CreateCinemaRequest;
 import com.dhbw.kinoticket.entity.Cinema;
-import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.service.CinemaService;
 import com.dhbw.kinoticket.service.LocationAddressService;
 import jakarta.validation.Valid;

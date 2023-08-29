@@ -1,6 +1,5 @@
 package com.dhbw.kinoticket.dao;
 
-import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.entity.User;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;

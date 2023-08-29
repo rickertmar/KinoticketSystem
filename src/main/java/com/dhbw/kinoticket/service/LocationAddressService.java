@@ -1,8 +1,5 @@
 package com.dhbw.kinoticket.service;
 
-import com.dhbw.kinoticket.entity.Cinema;
-import com.dhbw.kinoticket.entity.LocationAddress;
-import com.dhbw.kinoticket.repository.LocationAddressRepository;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

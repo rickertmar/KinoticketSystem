@@ -21,6 +21,6 @@ public class LocationAddress {
     @Column(name = "postcode")
     private String postcode;
 
-    @OneToOne(mappedBy = "locationAddress")
+    @OneToOne(mappedBy = "locationAddress") // bidirectional One to One relation to Cinema
     private Cinema cinema;
 }

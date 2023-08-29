@@ -40,7 +40,7 @@ public class LocationAddressController {
     public ResponseEntity<?> getLocationAddressById(@PathVariable Long id) {
         LocationAddress locationAddress = locationAddressService.findById(id);
         if (locationAddress != null) {
-            return new ResponseEntity<>(locationAddress, HttpStatus.OK);
+            return ResponseEntity.ok(locationAddress);
         } else {
             return new ResponseEntity<>("Location address not found", HttpStatus.NOT_FOUND);
         }

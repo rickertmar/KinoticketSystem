@@ -25,8 +25,7 @@ public class CinemaController {
     @PostMapping("/")
     public ResponseEntity<?> createCinema(
             @Valid @RequestBody CreateCinemaRequest createCinemaRequest) { //@Valid for Validation and ResponseEntity<?> for a more specific response (? = variable response type)
-        //error handling
-        try {
+        try { //error handling
             Cinema cinema = createCinemaRequest.getCinema();
             LocationAddress locationAddress = createCinemaRequest.getLocationAddress();
 

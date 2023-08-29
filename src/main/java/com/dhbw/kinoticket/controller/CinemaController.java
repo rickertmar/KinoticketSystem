@@ -1,13 +1,11 @@
 package com.dhbw.kinoticket.controller;
 
+import com.dhbw.kinoticket.entity.Cinema;
+import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.repository.CinemaRepository;
 import com.dhbw.kinoticket.repository.LocationAddressRepository;
 import com.dhbw.kinoticket.request.CreateCinemaRequest;
-import com.dhbw.kinoticket.entity.Cinema;
-import com.dhbw.kinoticket.entity.LocationAddress;
-import com.dhbw.kinoticket.request.CreateLocationRequest;
 import com.dhbw.kinoticket.service.CinemaService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +21,8 @@ public class CinemaController {
     private final LocationAddressRepository locationAddressRepository;
 
     //Create Cinema
-    @PreAuthorize("hasAuthority('admin:write')")
-    @PostMapping(value = "/")
+    @PreAuthorize("hasAuthority('admin:create')")
+    @PostMapping(value = "")
     public ResponseEntity<?> createCinema(@RequestBody CreateCinemaRequest createCinemaRequest) {
         var locationAddress = LocationAddress
                 .builder()
@@ -34,11 +32,11 @@ public class CinemaController {
                 .postcode(createCinemaRequest.getPostcode())
                 .build();
         var createdLocation = locationAddressRepository.save(locationAddress);
-        var cinema = Cinema
+        Cinema cinema = Cinema
                 .builder()
                 .name(createCinemaRequest.getName())
-                .locationAddress(createdLocation)
                 .build();
+        cinema.setLocationAddress(createdLocation);
         var createdCinema = cinemaRepository.save(cinema);
         return new ResponseEntity<>(createdCinema, HttpStatus.CREATED);
     }
@@ -89,7 +87,7 @@ public class CinemaController {
 
     // ----------------------------------------------------------------
     //Update location address of specific cinema
-    @PutMapping(value = "location")
+    @PutMapping(value = "/location")
     public ResponseEntity<?> updateLocationAddress(@RequestBody String cinemaName,
                                                    @RequestBody LocationAddress locationAddress) {
         try {

@@ -1,22 +1,22 @@
 package com.dhbw.kinoticket.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity(name = "Cinema")
-@Getter
-@Setter
 public class Cinema {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(name = "name")
+
     private String name;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="location_address_id", insertable = false, updatable = false)
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="location_id", referencedColumnName = "id")
     private LocationAddress locationAddress;
 }

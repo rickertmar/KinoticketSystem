@@ -5,17 +5,17 @@ import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.repository.LocationAddressRepository;
 import com.dhbw.kinoticket.repository.UserRepository;
 import com.dhbw.kinoticket.request.CreateLocationRequest;
+import com.dhbw.kinoticket.request.UpdateUserRequest;
+import com.dhbw.kinoticket.response.LocationResponse;
 import com.dhbw.kinoticket.response.UserResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -63,18 +63,29 @@ public class UserController {
                 .build();
         return ResponseEntity.ok(userResponse);
     }
-    @PutMapping(value = "")
-    public User updateSelf(HttpServletRequest httpServletRequest) {
-        Principal principal = httpServletRequest.getUserPrincipal();
-        return userRepository.save(userRepository.findByEmail(principal.getName()).orElseThrow());
-    }
     @DeleteMapping(value = "")
     public void deleteSelf(HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         userRepository.deleteById(userRepository.findByEmail(principal.getName()).orElseThrow().getId());
     }
+    @PutMapping(value = "")
+    public ResponseEntity<UserResponse> updateSelf(@RequestBody UpdateUserRequest updateUserRequest, HttpServletRequest httpServletRequest) {
+        Principal principal = httpServletRequest.getUserPrincipal();
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
+        user.setFirstName(updateUserRequest.getFirstName());
+        user.setLastName(updateUserRequest.getLastName());
+        userRepository.save(user);
+        var userResponse = UserResponse.builder()
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .billing(user.getBillingLocation())
+                .shipping(user.getShippingLocation())
+                .build();
+        return ResponseEntity.ok(userResponse);
+    }
     @PostMapping(value = "/shipping")
-    public LocationAddress addShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<LocationResponse> addShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
         var locationAddress = LocationAddress
                 .builder()
                 .street(createLocationRequest.getStreet())
@@ -85,31 +96,81 @@ public class UserController {
         var location = locationAddressRepository.save(locationAddress);
         User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
         user.setShippingLocation(location);
-        return userRepository.save(user).getShippingLocation();
+        userRepository.save(user);
+        var locationResponse = LocationResponse.builder()
+                .street(location.getStreet())
+                .city(location.getCity())
+                .country(location.getCountry())
+                .postcode(location.getPostcode())
+                .build();
+        return ResponseEntity.ok(locationResponse);
     }
     @PutMapping(value = "/shipping")
-    public LocationAddress updateShippingAddress(@RequestBody LocationAddress locationAddress, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<LocationResponse> updateShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
         User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        user.setShippingLocation(locationAddress);
-        return userRepository.save(user).getShippingLocation();
+        LocationAddress location = user.getShippingLocation();
+        location.setStreet(createLocationRequest.getStreet());
+        location.setCity(createLocationRequest.getCity());
+        location.setCountry(createLocationRequest.getCountry());
+        location.setPostcode(createLocationRequest.getPostcode());
+        locationAddressRepository.save(location);
+        user.setShippingLocation(location);
+        userRepository.save(user);
+        var locationResponse = LocationResponse.builder()
+                .street(location.getStreet())
+                .city(location.getCity())
+                .country(location.getCountry())
+                .postcode(location.getPostcode())
+                .build();
+        return ResponseEntity.ok(locationResponse);
     }
     @DeleteMapping(value = "/shipping")
     public void deleteShippingAddress(HttpServletRequest httpServletRequest) {
         User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
+        LocationAddress locationAddress = user.getShippingLocation();
+        locationAddressRepository.delete(locationAddress);
         user.setShippingLocation(null);
         userRepository.save(user);
     }
     @PostMapping(value = "/billing")
-    public LocationAddress addBillingAddress(@RequestBody LocationAddress locationAddress, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<LocationResponse> addBillingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
+        var locationAddress = LocationAddress
+                .builder()
+                .street(createLocationRequest.getStreet())
+                .city(createLocationRequest.getCity())
+                .country(createLocationRequest.getCountry())
+                .postcode(createLocationRequest.getPostcode())
+                .build();
+        var location = locationAddressRepository.save(locationAddress);
         User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        user.setBillingLocation(locationAddress);
-        return userRepository.save(user).getBillingLocation();
+        user.setBillingLocation(location);
+        userRepository.save(user);
+        var locationResponse = LocationResponse.builder()
+                .street(location.getStreet())
+                .city(location.getCity())
+                .country(location.getCountry())
+                .postcode(location.getPostcode())
+                .build();
+        return ResponseEntity.ok(locationResponse);
     }
     @PutMapping(value = "/billing")
-    public LocationAddress updateBillingAddress(@RequestBody LocationAddress locationAddress, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<LocationResponse> updateBillingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
         User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        user.setBillingLocation(locationAddress);
-        return userRepository.save(user).getBillingLocation();
+        LocationAddress location = user.getBillingLocation();
+        location.setStreet(createLocationRequest.getStreet());
+        location.setCity(createLocationRequest.getCity());
+        location.setCountry(createLocationRequest.getCountry());
+        location.setPostcode(createLocationRequest.getPostcode());
+        locationAddressRepository.save(location);
+        user.setBillingLocation(location);
+        userRepository.save(user);
+        var locationResponse = LocationResponse.builder()
+                .street(location.getStreet())
+                .city(location.getCity())
+                .country(location.getCountry())
+                .postcode(location.getPostcode())
+                .build();
+        return ResponseEntity.ok(locationResponse);
     }
     @DeleteMapping(value = "/billing")
     public void deleteBillingAddress(HttpServletRequest httpServletRequest) {

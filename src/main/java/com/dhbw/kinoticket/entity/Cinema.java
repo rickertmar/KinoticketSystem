@@ -10,10 +10,11 @@ import lombok.Setter;
 public class Cinema {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "name")
     private String name;
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="locationAddress_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name="location_address_id", referencedColumnName = "id")
     private LocationAddress locationAddress;
 }

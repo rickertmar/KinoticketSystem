@@ -2,7 +2,6 @@ package com.dhbw.kinoticket.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-
 @Data
 @Builder
 @AllArgsConstructor
@@ -16,5 +15,6 @@ public class LocationAddress {
     private String street;
     private String city;
     private String country;
-    private int postalcode;
+    private String postalcode;
+
 }

@@ -15,6 +15,6 @@ public class LocationAddress {
     private String street;
     private String city;
     private String country;
-    private String postalcode;
+    private String postcode;
 
 }

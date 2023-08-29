@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class CinemaService {
+
     private final CinemaRepository cinemaRepository;
 
     public CinemaService(CinemaRepository cinemaRepository) {

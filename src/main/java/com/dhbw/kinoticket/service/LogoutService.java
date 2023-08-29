@@ -1,4 +1,4 @@
-package com.dhbw.kinoticket.config;
+package com.dhbw.kinoticket.service;
 
 import com.dhbw.kinoticket.repository.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.dhbw.kinoticket.auth;
+package com.dhbw.kinoticket.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;

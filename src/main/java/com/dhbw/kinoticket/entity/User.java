@@ -3,7 +3,6 @@ package com.dhbw.kinoticket.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -31,10 +30,10 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     private List<Token> tokens;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="shippingLocation_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name="shippingLocation_id", referencedColumnName = "id")
     private LocationAddress shippingLocation;
     @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="billingLocation_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @JoinColumn(name="billingLocation_id", referencedColumnName = "id")
     private LocationAddress billingLocation;
 
     @Override

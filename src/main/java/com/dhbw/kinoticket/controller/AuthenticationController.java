@@ -1,9 +1,9 @@
 package com.dhbw.kinoticket.controller;
 
-import com.dhbw.kinoticket.auth.AuthenticationRequest;
-import com.dhbw.kinoticket.auth.AuthenticationResponse;
-import com.dhbw.kinoticket.auth.AuthenticationService;
-import com.dhbw.kinoticket.auth.RegisterRequest;
+import com.dhbw.kinoticket.request.AuthenticationRequest;
+import com.dhbw.kinoticket.response.AuthenticationResponse;
+import com.dhbw.kinoticket.service.AuthenticationService;
+import com.dhbw.kinoticket.request.RegisterRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;

@@ -1,12 +1,14 @@
-package com.dhbw.kinoticket.auth;
+package com.dhbw.kinoticket.service;
 
-import com.dhbw.kinoticket.config.JwtService;
 import com.dhbw.kinoticket.entity.Role;
 import com.dhbw.kinoticket.entity.Token;
 import com.dhbw.kinoticket.entity.TokenType;
 import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.repository.TokenRepository;
 import com.dhbw.kinoticket.repository.UserRepository;
+import com.dhbw.kinoticket.request.AuthenticationRequest;
+import com.dhbw.kinoticket.request.RegisterRequest;
+import com.dhbw.kinoticket.response.AuthenticationResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,15 +1,15 @@
-package com.dhbw.kinoticket.request;
+package com.dhbw.kinoticket.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateLocationRequest {
+public class LocationResponse {
     private String street;
     private String city;
     private String country;

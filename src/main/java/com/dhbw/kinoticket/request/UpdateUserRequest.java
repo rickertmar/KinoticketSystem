@@ -5,13 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Builder
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CreateLocationRequest {
-    private String street;
-    private String city;
-    private String country;
-    private String postcode;
+public class UpdateUserRequest {
+    private String firstName;
+    private String lastName;
 }

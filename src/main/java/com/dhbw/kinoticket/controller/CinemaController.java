@@ -1,54 +1,103 @@
 package com.dhbw.kinoticket.controller;
 
-import com.dhbw.kinoticket.dao.CreateCinemaRequest;
+import com.dhbw.kinoticket.repository.CinemaRepository;
+import com.dhbw.kinoticket.repository.LocationAddressRepository;
+import com.dhbw.kinoticket.request.CreateCinemaRequest;
 import com.dhbw.kinoticket.entity.Cinema;
+import com.dhbw.kinoticket.entity.LocationAddress;
+import com.dhbw.kinoticket.request.CreateLocationRequest;
 import com.dhbw.kinoticket.service.CinemaService;
-import com.dhbw.kinoticket.service.LocationAddressService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@CrossOrigin
+@RequiredArgsConstructor
 @RequestMapping("/cinemas")
 public class CinemaController {
     private final CinemaService cinemaService;
-    private final LocationAddressService locationAddressService;
+    private final CinemaRepository cinemaRepository;
+    private final LocationAddressRepository locationAddressRepository;
 
-    public CinemaController(CinemaService cinemaService, LocationAddressService locationAddressService) {
-        this.cinemaService = cinemaService;
-        this.locationAddressService = locationAddressService;
-    }
-
-    @PostMapping("/")
-    public ResponseEntity<?> createCinema(
-            @Valid @RequestBody CreateCinemaRequest createCinemaRequest) { //@Valid for Validation and ResponseEntity<?> for a more specific response (? = variable response type)
-        try { //error handling
-            Cinema cinema = createCinemaRequest.getCinema();
-            LocationAddress locationAddress = createCinemaRequest.getLocationAddress();
-
-            locationAddress = locationAddressService.createLocationAddress(locationAddress);
-
-            cinema.setLocationAddress(locationAddress);
-
-            Cinema createdCinema = cinemaService.createCinema(cinema);
-
-            return new ResponseEntity<>(createdCinema, HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Failed to create cinema.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
+    //Create Cinema
+    @PreAuthorize("hasAuthority('admin:write')")
+    @PostMapping(value = "/")
+    public ResponseEntity<?> createCinema(@RequestBody CreateCinemaRequest createCinemaRequest) {
+        var locationAddress = LocationAddress
+                .builder()
+                .street(createCinemaRequest.getStreet())
+                .city(createCinemaRequest.getCity())
+                .country(createCinemaRequest.getCountry())
+                .postcode(createCinemaRequest.getPostcode())
+                .build();
+        var createdLocation = locationAddressRepository.save(locationAddress);
+        var cinema = Cinema
+                .builder()
+                .name(createCinemaRequest.getName())
+                .locationAddress(createdLocation)
+                .build();
+        var createdCinema = cinemaRepository.save(cinema);
+        return new ResponseEntity<>(createdCinema, HttpStatus.CREATED);
     }
 
     //Get Response of specified cinema by id
-    @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('admin:read')")
+    @GetMapping(value = "/{id}")
     public ResponseEntity<?> getCinemaById(@PathVariable Long id) {
         Cinema cinema = cinemaService.findById(id);
         if (cinema != null) {
             return ResponseEntity.ok(cinema);
         } else {
             return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    //Delete specific cinema
+    @PreAuthorize("hasAuthority('admin:delete')")
+    @DeleteMapping(value = "/{id}")
+    public ResponseEntity<?> deleteCinema(@PathVariable Long id) {
+        cinemaService.deleteCinema(id);
+        return new ResponseEntity<>("Cinema deleted.", HttpStatus.OK);
+    }
+
+
+    // ----------------------------------------------------------------
+    //LocationAddress of Cinema
+    //Add location address to specific cinema with name
+    /*@PostMapping("/location")
+    public ResponseEntity<?> addLocationAddress(@Valid @RequestBody String cinemaName,
+                                                @Valid @RequestBody CreateLocationRequest createLocationRequest) {
+        try {
+            var locationAddress = LocationAddress
+                    .builder()
+                    .street(createLocationRequest.getStreet())
+                    .city(createLocationRequest.getCity())
+                    .country(createLocationRequest.getCountry())
+                    .postcode(createLocationRequest.getPostcode())
+                    .build();
+            var location = locationAddressRepository.save(locationAddress);
+            Cinema cinema = cinemaRepository.findByName(cinemaName);
+            cinema.setLocationAddress(locationAddress);
+            return new ResponseEntity<>(cinemaRepository.save(cinema).getLocationAddress(), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to add location.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }*/
+
+    // ----------------------------------------------------------------
+    //Update location address of specific cinema
+    @PutMapping(value = "location")
+    public ResponseEntity<?> updateLocationAddress(@RequestBody String cinemaName,
+                                                   @RequestBody LocationAddress locationAddress) {
+        try {
+            Cinema cinema = cinemaRepository.findByName(cinemaName);
+            cinema.setLocationAddress(locationAddress);
+            return new ResponseEntity<>(cinemaRepository.save(cinema).getLocationAddress(), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("LocationAddress or Cinema not found", HttpStatus.NOT_FOUND);
         }
     }
 }

@@ -80,7 +80,7 @@ public class UserController {
                 .street(createLocationRequest.getStreet())
                 .city(createLocationRequest.getCity())
                 .country(createLocationRequest.getCountry())
-                .postalcode(createLocationRequest.getPostalCode())
+                .postcode(createLocationRequest.getPostcode())
                 .build();
         var location = locationAddressRepository.save(locationAddress);
         User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();

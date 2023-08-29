@@ -1,6 +1,7 @@
-package com.dhbw.kinoticket.dao;
+package com.dhbw.kinoticket.request;
 
 import com.dhbw.kinoticket.entity.Cinema;
+import com.dhbw.kinoticket.entity.LocationAddress;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.Setter;

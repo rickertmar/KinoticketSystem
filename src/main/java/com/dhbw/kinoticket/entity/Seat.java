@@ -23,4 +23,5 @@ public class Seat {
 
     @Column(name = "yLoc")//relative Y-Location in theatre
     private int yLoc;
+
 }

@@ -1,4 +1,4 @@
-package com.dhbw.kinoticket.auth;
+package com.dhbw.kinoticket.request;
 
 import lombok.*;
 

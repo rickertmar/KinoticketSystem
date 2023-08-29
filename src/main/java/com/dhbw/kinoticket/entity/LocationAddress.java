@@ -1,23 +1,20 @@
 package com.dhbw.kinoticket.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-
+import lombok.*;
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity(name = "LocationAddress")
-@Getter
-@Setter
 public class LocationAddress {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(name = "street")
     private String street;
-    @Column(name = "city")
     private String city;
-    @Column(name = "country")
     private String country;
-    @Column(name = "postcode")
-    private int postcode;
+    private String postalcode;
+
 }

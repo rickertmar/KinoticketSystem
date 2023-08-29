@@ -1,10 +1,11 @@
 package com.dhbw.kinoticket.repository;
 
 import com.dhbw.kinoticket.entity.User;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface UserRepository extends CrudRepository<User, Long> {
-    int countByEmail(String email);
+import java.util.Optional;
 
-    User findByEmail(String email);
+public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findByEmail(String email);
+
 }

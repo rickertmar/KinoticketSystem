@@ -3,6 +3,8 @@ package com.dhbw.kinoticket.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -19,4 +21,7 @@ public class Cinema {
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="location_id", referencedColumnName = "id")
     private LocationAddress locationAddress;
+
+    @OneToMany(mappedBy = "cinema", cascade = CascadeType.ALL)
+    private List<CinemaHall> cinemaHallList;
 }

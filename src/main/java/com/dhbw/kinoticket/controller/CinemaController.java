@@ -1,7 +1,10 @@
 package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.entity.Cinema;
+import com.dhbw.kinoticket.entity.CinemaHall;
 import com.dhbw.kinoticket.entity.LocationAddress;
+import com.dhbw.kinoticket.entity.Seat;
+import com.dhbw.kinoticket.repository.CinemaHallRepository;
 import com.dhbw.kinoticket.repository.CinemaRepository;
 import com.dhbw.kinoticket.repository.LocationAddressRepository;
 import com.dhbw.kinoticket.request.CreateCinemaRequest;
@@ -12,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Optional;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/cinemas")
@@ -19,10 +25,11 @@ public class CinemaController {
     private final CinemaService cinemaService;
     private final CinemaRepository cinemaRepository;
     private final LocationAddressRepository locationAddressRepository;
+    private final CinemaHallRepository cinemaHallRepository;
 
     //Create Cinema
     @PreAuthorize("hasAuthority('admin:create')")
-    @PostMapping(value = "")
+    @PostMapping(value = "/")
     public ResponseEntity<?> createCinema(@RequestBody CreateCinemaRequest createCinemaRequest) {
         var locationAddress = LocationAddress
                 .builder()
@@ -64,40 +71,112 @@ public class CinemaController {
 
     // ----------------------------------------------------------------
     //LocationAddress of Cinema
-    //Add location address to specific cinema with name
-    /*@PostMapping("/location")
-    public ResponseEntity<?> addLocationAddress(@Valid @RequestBody String cinemaName,
-                                                @Valid @RequestBody CreateLocationRequest createLocationRequest) {
-        try {
-            var locationAddress = LocationAddress
-                    .builder()
-                    .street(createLocationRequest.getStreet())
-                    .city(createLocationRequest.getCity())
-                    .country(createLocationRequest.getCountry())
-                    .postcode(createLocationRequest.getPostcode())
-                    .build();
-            var location = locationAddressRepository.save(locationAddress);
-            Cinema cinema = cinemaRepository.findByName(cinemaName);
-            cinema.setLocationAddress(locationAddress);
-            return new ResponseEntity<>(cinemaRepository.save(cinema).getLocationAddress(), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>("Failed to add location.", HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }*/
-
     // ----------------------------------------------------------------
     //Update location address of specific cinema
-    @PutMapping(value = "/location")
-    public ResponseEntity<?> updateLocationAddress(@RequestBody String cinemaName,
+    @PreAuthorize("hasAuthority('admin:update')")
+    @PutMapping(value = "/{id}/location")
+    public ResponseEntity<?> updateLocationAddress(@PathVariable Long id,
                                                    @RequestBody LocationAddress locationAddress) {
         try {
-            Cinema cinema = cinemaRepository.findByName(cinemaName);
-            cinema.setLocationAddress(locationAddress);
-            return new ResponseEntity<>(cinemaRepository.save(cinema).getLocationAddress(), HttpStatus.OK);
+            Optional<Cinema> optionalCinema = cinemaRepository.findById(id);
+            if (optionalCinema.isPresent()) {
+                Cinema cinema = optionalCinema.get();
+                cinema.setLocationAddress(locationAddress);
+                return new ResponseEntity<>(cinemaRepository.save(cinema).getLocationAddress(), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Cinema not found", HttpStatus.NOT_FOUND);
+            }
         } catch (Exception e) {
-            return new ResponseEntity<>("LocationAddress or Cinema not found", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("Failed to update LocationAddress", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+    // ----------------------------------------------------------------
+    //CinemaHall "Controller"
+    // ----------------------------------------------------------------
+    //Create CinemaHall with Seats
+    @PreAuthorize("hasAuthority('admin:create')")
+    @PostMapping(value = "/{id}/cinemahalls")
+    public ResponseEntity<?> addCinemaHall(@PathVariable Long id,
+                                           @RequestBody List<Seat> seatsRequest) {
+        try {
+            var cinemaHall = CinemaHall.builder()
+                    .seats(seatsRequest)
+                    .build();
+            CinemaHall createdCinemaHall = cinemaHallRepository.save(cinemaHall);
+
+            Optional<Cinema> optionalCinema = cinemaRepository.findById(id);
+            if (optionalCinema.isPresent()) {
+                Cinema cinema = optionalCinema.get();
+                cinema.getCinemaHallList().add(createdCinemaHall);
+                return new ResponseEntity<>(cinemaRepository.save(cinema), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to add CinemaHall.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    //Get specific CinemaHall of Cinema
+    @PreAuthorize("hasAuthority('admin:read')")
+    @GetMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}")
+    public ResponseEntity<?> getCinemaHall(@PathVariable Long cinemaId,
+                                           @PathVariable Long cinemaHallId) {
+        Optional<CinemaHall> optionalCinemaHall = cinemaHallRepository.findById(cinemaHallId);
+        if (optionalCinemaHall.isPresent()) {
+            return ResponseEntity.ok(optionalCinemaHall.get());
+        } else {
+            return new ResponseEntity<>("CinemaHall not found.", HttpStatus.NOT_FOUND);
+        }
+    }
+
+    //Update SeatsList of a CinemaHall object
+    @PreAuthorize("hasAuthority('admin:update')")
+    @PutMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}")
+    public ResponseEntity<?> updateCinemaHall(@PathVariable Long cinemaId,
+                                              @PathVariable Long cinemaHallId,
+                                              @RequestBody List<Seat> updatedSeatList) {
+        try {
+            Optional<CinemaHall> optionalCinemaHall = cinemaHallRepository.findById(cinemaHallId);
+            //Optional<Cinema> optionalCinema = cinemaRepository.findById(cinemaId);
+            //Cinema shouldn't be effected by the update of the CinemaHall
+            if (optionalCinemaHall.isPresent()) {  //&& optionalCinema.isPresent()
+                CinemaHall updatedCinemaHall = optionalCinemaHall.get();
+                updatedCinemaHall.setSeats(updatedSeatList);
+                //Cinema cinema = optionalCinema.get();
+                return new ResponseEntity<>(cinemaHallRepository.save(updatedCinemaHall), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("CinemaHall of Cinema not found.", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to update CinemaHall", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    //Delete CinemaHall
+    @PreAuthorize("hasAuthority('admin:delete')")
+    @DeleteMapping("/{cinemaId}/cinemahalls/{cinemaHallId}")
+    public ResponseEntity<?> deleteCinemaHall(@PathVariable Long cinemaHallId,
+                                              @PathVariable String cinemaId) {
+        try {
+            Optional<CinemaHall> optionalCinemaHall = cinemaHallRepository.findById(cinemaHallId);
+            if (optionalCinemaHall.isPresent()) {
+                CinemaHall cinemaHall = optionalCinemaHall.get();
+                Cinema cinema = cinemaHall.getCinema();
+                cinema.getCinemaHallList().remove(cinemaHall);
+                cinemaRepository.save(cinema);
+                cinemaHallRepository.delete(cinemaHall);
+                return new ResponseEntity<>("CinemaHall deleted successfully.", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("CinemaHall not found.", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to delete CinemaHall.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 }
 
 /*

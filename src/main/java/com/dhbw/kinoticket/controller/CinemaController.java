@@ -8,6 +8,7 @@ import com.dhbw.kinoticket.repository.CinemaHallRepository;
 import com.dhbw.kinoticket.repository.CinemaRepository;
 import com.dhbw.kinoticket.repository.LocationAddressRepository;
 import com.dhbw.kinoticket.request.CreateCinemaRequest;
+import com.dhbw.kinoticket.request.CreateSeatRequest;
 import com.dhbw.kinoticket.service.CinemaService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -95,27 +97,54 @@ public class CinemaController {
     // ----------------------------------------------------------------
     //CinemaHall "Controller"
     // ----------------------------------------------------------------
-    //Create CinemaHall with Seats
+    //Create and add CinemaHall
     @PreAuthorize("hasAuthority('admin:create')")
     @PostMapping(value = "/{id}/cinemahalls")
-    public ResponseEntity<?> addCinemaHall(@PathVariable Long id,
-                                           @RequestBody List<Seat> seatsRequest) {
+    public ResponseEntity<?> addCinemaHall(@PathVariable Long id) {
         try {
-            var cinemaHall = CinemaHall.builder()
-                    .seats(seatsRequest)
-                    .build();
-            CinemaHall createdCinemaHall = cinemaHallRepository.save(cinemaHall);
-
+            //Operate in specified cinema
             Optional<Cinema> optionalCinema = cinemaRepository.findById(id);
             if (optionalCinema.isPresent()) {
                 Cinema cinema = optionalCinema.get();
+                //Build the new CinemaHall object
+                var cinemaHall = CinemaHall.builder()
+                        .build();
+                //Save CinemaHall object and update/save Cinema object
+                CinemaHall createdCinemaHall = cinemaHallRepository.save(cinemaHall);
+                //Ensure that the CinemaHallList of the Cinema object is not null
+                if (cinema.getCinemaHallList() == null) {
+                    cinema.setCinemaHallList(new ArrayList<>());
+                }
                 cinema.getCinemaHallList().add(createdCinemaHall);
-                return new ResponseEntity<>(cinemaRepository.save(cinema), HttpStatus.OK);
+                return new ResponseEntity<>(cinemaRepository.save(cinema).getCinemaHallList(), HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
             }
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to add CinemaHall.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    //Add seats to CinemaHall
+    @PreAuthorize("hasAuthority('admin:create')")
+    @PostMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}/seats")
+    public ResponseEntity<?> addSeatsToCinemaHall(
+            @PathVariable Long cinemaId,
+            @PathVariable Long cinemaHallId,
+            @RequestBody List<CreateSeatRequest> seatDTOList) {
+        try {
+            Optional<CinemaHall> optionalCinemaHall = cinemaHallRepository.findById(cinemaHallId);
+            if (optionalCinemaHall.isPresent()) {
+                CinemaHall cinemaHall = optionalCinemaHall.get();
+                List<Seat> seats = convertSeatDTOsToSeats(seatDTOList);
+                cinemaHall.getSeats().addAll(seats);
+                cinemaHallRepository.save(cinemaHall);
+                return new ResponseEntity<>(cinemaHall, HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("CinemaHall not found.", HttpStatus.NOT_FOUND);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to add seats to CinemaHall.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -134,17 +163,19 @@ public class CinemaController {
 
     //Update SeatsList of a CinemaHall object
     @PreAuthorize("hasAuthority('admin:update')")
-    @PutMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}")
-    public ResponseEntity<?> updateCinemaHall(@PathVariable Long cinemaId,
-                                              @PathVariable Long cinemaHallId,
-                                              @RequestBody List<Seat> updatedSeatList) {
+    @PutMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}/seats")
+    public ResponseEntity<?> updateCinemaHallSeats(
+            @PathVariable Long cinemaId,
+            @PathVariable Long cinemaHallId,
+            @RequestBody List<CreateSeatRequest> seatDTOList) {
         try {
             Optional<CinemaHall> optionalCinemaHall = cinemaHallRepository.findById(cinemaHallId);
             //Optional<Cinema> optionalCinema = cinemaRepository.findById(cinemaId);
             //Cinema shouldn't be effected by the update of the CinemaHall
             if (optionalCinemaHall.isPresent()) {  //&& optionalCinema.isPresent()
                 CinemaHall updatedCinemaHall = optionalCinemaHall.get();
-                updatedCinemaHall.setSeats(updatedSeatList);
+                List<Seat> seats = convertSeatDTOsToSeats(seatDTOList);
+                updatedCinemaHall.setSeats(seats);
                 //Cinema cinema = optionalCinema.get();
                 return new ResponseEntity<>(cinemaHallRepository.save(updatedCinemaHall), HttpStatus.OK);
             } else {
@@ -177,17 +208,57 @@ public class CinemaController {
         }
     }
 
+    //Method to convert seat dto object to seats list
+    private List<Seat> convertSeatDTOsToSeats(List<CreateSeatRequest> seatDTOList) {
+        List<Seat> seats = new ArrayList<>();
+        for (CreateSeatRequest seatDTO : seatDTOList) {
+            var seat = Seat.builder()
+                    .seatRow(seatDTO.getSeatRow())
+                    .number(seatDTO.getNumber())
+                    .xLoc(seatDTO.getXLoc())
+                    .yLoc(seatDTO.getYLoc())
+                    .isBlocked(seatDTO.isBlocked())
+                    .build();
+            seats.add(seat);
+        }
+        return seats;
+    }
+
 }
 
 /*
 Create Cinema json format
 {
-  "name": "TestCinema",
-  "locationAddress": {
-    "street": "Teststraße 1",
-    "city": "Teststadt",
-    "country": "Testland",
-    "postcode": "12345"
-  }
+    "name": "Lichtspielhaus",
+    "street": "Lennestrasse 1",
+    "city": "Altenhundem",
+    "country": "Germany",
+    "postcode": "58368"
 }
+
+Add Seats to CinemaHall
+[
+    {
+        "seatRow": 1,
+        "number": 101,
+        "xLoc": 10,
+        "yLoc": 20,
+        "isBlocked": false
+    },
+    {
+        "seatRow": 1,
+        "number": 102,
+        "xLoc": 20,
+        "yLoc": 20,
+        "isBlocked": true
+    },
+    {
+        "seatRow": 1,
+        "number": 103,
+        "xLoc": 30,
+        "yLoc": 20,
+        "isBlocked": false
+    }
+]
+
  */

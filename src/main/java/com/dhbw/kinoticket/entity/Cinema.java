@@ -3,6 +3,7 @@ package com.dhbw.kinoticket.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -23,5 +24,5 @@ public class Cinema {
     private LocationAddress locationAddress;
 
     @OneToMany(mappedBy = "cinema", cascade = CascadeType.ALL)
-    private List<CinemaHall> cinemaHallList;
+    private List<CinemaHall> cinemaHallList = new ArrayList<>(); //ensure that the list is never null
 }

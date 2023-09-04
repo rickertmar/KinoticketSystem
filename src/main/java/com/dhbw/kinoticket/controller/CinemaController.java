@@ -109,14 +109,14 @@ public class CinemaController {
                 //Build the new CinemaHall object
                 var cinemaHall = CinemaHall.builder()
                         .build();
-                //Save CinemaHall object and update/save Cinema object
-                CinemaHall createdCinemaHall = cinemaHallRepository.save(cinemaHall);
                 //Ensure that the CinemaHallList of the Cinema object is not null
                 if (cinema.getCinemaHallList() == null) {
                     cinema.setCinemaHallList(new ArrayList<>());
                 }
-                cinema.getCinemaHallList().add(createdCinemaHall);
-                return new ResponseEntity<>(cinemaRepository.save(cinema).getCinemaHallList(), HttpStatus.CREATED);
+                cinema.getCinemaHallList().add(cinemaHall);
+                cinemaHall.setCinema(cinema);
+                cinemaRepository.save(cinema);
+                return new ResponseEntity<>(cinemaHallRepository.save(cinemaHall), HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
             }
@@ -155,7 +155,8 @@ public class CinemaController {
                                            @PathVariable Long cinemaHallId) {
         Optional<CinemaHall> optionalCinemaHall = cinemaHallRepository.findById(cinemaHallId);
         if (optionalCinemaHall.isPresent()) {
-            return ResponseEntity.ok(optionalCinemaHall.get());
+            CinemaHall cinemaHall = optionalCinemaHall.get();
+            return ResponseEntity.ok(cinemaHall);
         } else {
             return new ResponseEntity<>("CinemaHall not found.", HttpStatus.NOT_FOUND);
         }

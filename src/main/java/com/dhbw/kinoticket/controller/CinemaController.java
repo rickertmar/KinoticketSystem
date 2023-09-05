@@ -109,13 +109,9 @@ public class CinemaController {
                 //Build the new CinemaHall object
                 var cinemaHall = CinemaHall.builder()
                         .build();
-                //Ensure that the CinemaHallList of the Cinema object is not null
-                if (cinema.getCinemaHallList() == null) {
-                    cinema.setCinemaHallList(new ArrayList<>());
-                }
                 cinema.getCinemaHallList().add(cinemaHall);
                 cinemaHall.setCinema(cinema);
-                cinemaRepository.save(cinema);
+                //cinemaRepository.save(cinema); unnecessary -> caused double creation of cinemahall objects
                 return new ResponseEntity<>(cinemaHallRepository.save(cinemaHall), HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
@@ -136,7 +132,7 @@ public class CinemaController {
             Optional<CinemaHall> optionalCinemaHall = cinemaHallRepository.findById(cinemaHallId);
             if (optionalCinemaHall.isPresent()) {
                 CinemaHall cinemaHall = optionalCinemaHall.get();
-                List<Seat> seats = convertSeatDTOsToSeats(seatDTOList);
+                List<Seat> seats = convertSeatDTOsToSeats(seatDTOList, cinemaHall);
                 cinemaHall.getSeats().addAll(seats);
                 cinemaHallRepository.save(cinemaHall);
                 return new ResponseEntity<>(cinemaHall, HttpStatus.OK);
@@ -175,7 +171,7 @@ public class CinemaController {
             //Cinema shouldn't be effected by the update of the CinemaHall
             if (optionalCinemaHall.isPresent()) {  //&& optionalCinema.isPresent()
                 CinemaHall updatedCinemaHall = optionalCinemaHall.get();
-                List<Seat> seats = convertSeatDTOsToSeats(seatDTOList);
+                List<Seat> seats = convertSeatDTOsToSeats(seatDTOList, updatedCinemaHall);
                 updatedCinemaHall.setSeats(seats);
                 //Cinema cinema = optionalCinema.get();
                 return new ResponseEntity<>(cinemaHallRepository.save(updatedCinemaHall), HttpStatus.OK);
@@ -210,7 +206,8 @@ public class CinemaController {
     }
 
     //Method to convert seat dto object to seats list
-    private List<Seat> convertSeatDTOsToSeats(List<CreateSeatRequest> seatDTOList) {
+    private List<Seat> convertSeatDTOsToSeats(List<CreateSeatRequest> seatDTOList,
+                                              CinemaHall cinemaHall) {
         List<Seat> seats = new ArrayList<>();
         for (CreateSeatRequest seatDTO : seatDTOList) {
             var seat = Seat.builder()
@@ -219,6 +216,7 @@ public class CinemaController {
                     .xLoc(seatDTO.getXLoc())
                     .yLoc(seatDTO.getYLoc())
                     .isBlocked(seatDTO.isBlocked())
+                    .cinemaHall(cinemaHall)
                     .build();
             seats.add(seat);
         }
@@ -242,23 +240,23 @@ Add Seats to CinemaHall
     {
         "seatRow": 1,
         "number": 101,
-        "xLoc": 10,
-        "yLoc": 20,
-        "isBlocked": false
+        "xloc": 10,
+        "yloc": 20,
+        "blocked": false
     },
     {
         "seatRow": 1,
         "number": 102,
-        "xLoc": 20,
-        "yLoc": 20,
-        "isBlocked": true
+        "xloc": 20,
+        "yloc": 20,
+        "blocked": true
     },
     {
         "seatRow": 1,
         "number": 103,
-        "xLoc": 30,
-        "yLoc": 20,
-        "isBlocked": false
+        "xloc": 30,
+        "yloc": 20,
+        "blocked": false
     }
 ]
 

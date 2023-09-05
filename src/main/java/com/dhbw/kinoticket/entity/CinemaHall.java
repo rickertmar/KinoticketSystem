@@ -1,6 +1,7 @@
 package com.dhbw.kinoticket.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class CinemaHall {
     @OneToMany(mappedBy = "cinemaHall", cascade = CascadeType.ALL)
     private List<Seat> seats;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "cinema_id")
     private Cinema cinema;

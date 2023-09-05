@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -23,6 +24,7 @@ public class Seat {
     private int yLoc; //relative Y-Location in theatre
     private boolean isBlocked;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "hall_id")
     private CinemaHall cinemaHall;

@@ -15,6 +15,7 @@ Used technologies/dependencies
   * **MySQL**
 * Authentication and Authorization:
   * **JWT (JSON Web Tokens)**: JWT is a compact, self-contained way to represent and transmit information between parties as a JSON object. It is (commonly) used for implementing authentication and authorization in web applications
-*Testing Frameworks:
+* Testing Frameworks:
   * **JUnit**: Testing framework for automating unit tests, ensuring the reliability and correctness of individual code units within applications
   * **Mockito**: Java mocking framework used for creating mock objects to isolate and test specific parts of code, especially in unit testing scenarios
+  * Combination of JUnit and Mockito to test api endpoints in isolation with mock objects and without building/running the app everytime to send requests or get responses

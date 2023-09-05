@@ -1,7 +1,5 @@
-package com.dhbw.kinoticket.entity;
+package com.dhbw.kinoticket.request;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,21 +9,10 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "Seat")
-public class Seat {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long id;
-
+public class CreateSeatRequest {
     private int seatRow;
     private int number;
     private int xLoc; //relative X-Location in theatre
     private int yLoc; //relative Y-Location in theatre
     private boolean isBlocked;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "hall_id")
-    private CinemaHall cinemaHall;
 }

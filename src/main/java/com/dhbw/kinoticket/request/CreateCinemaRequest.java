@@ -1,17 +1,17 @@
 package com.dhbw.kinoticket.request;
 
-import com.dhbw.kinoticket.entity.Cinema;
-import com.dhbw.kinoticket.entity.LocationAddress;
-import jakarta.validation.Valid;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Getter
-@Setter
+@Builder
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CreateCinemaRequest {
-    @Valid
-    private Cinema cinema;
 
-    @Valid
-    private LocationAddress locationAddress;
+    private String name;
+    private String street;
+    private String city;
+    private String country;
+    private String postcode;
+
 }

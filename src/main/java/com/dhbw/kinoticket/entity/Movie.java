@@ -1,21 +1,29 @@
 package com.dhbw.kinoticket.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity(name = "Movie")
-@Getter
-@Setter
 public class Movie {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @Column(name = "title")
+
     private String title;
     @Enumerated(EnumType.ORDINAL)
-    @Column(name = "fsk")
     private FSK fsk;
-    @Column(name = "description")
     private String description;
+    private int releaseYear;
+    private String genres;
+    private String director;
+    private int runningWeek;
+    private String runtime;
+    private String releaseCountry;
+    private String imageSrc;
+    private String actors;
 }

@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.entity;
 
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -7,25 +8,24 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Entity(name = "Seat")
-public class Seat {
+@Entity(name = "CinemaHall")
+public class CinemaHall {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    private int seatRow;
-    private int number;
-    private int xLoc; //relative X-Location in theatre
-    private int yLoc; //relative Y-Location in theatre
-    private boolean isBlocked;
+    @OneToMany(mappedBy = "cinemaHall", cascade = CascadeType.ALL)
+    private List<Seat> seats;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "hall_id")
-    private CinemaHall cinemaHall;
+    @JoinColumn(name = "cinema_id")
+    private Cinema cinema;
 }

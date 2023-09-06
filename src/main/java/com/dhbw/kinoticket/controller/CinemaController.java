@@ -11,6 +11,7 @@ import com.dhbw.kinoticket.request.CreateCinemaRequest;
 import com.dhbw.kinoticket.request.CreateSeatRequest;
 import com.dhbw.kinoticket.service.CinemaService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,6 +29,7 @@ public class CinemaController {
     private final CinemaRepository cinemaRepository;
     private final LocationAddressRepository locationAddressRepository;
     private final CinemaHallRepository cinemaHallRepository;
+
 
     //Create Cinema
     @PreAuthorize("hasAuthority('admin:create')")

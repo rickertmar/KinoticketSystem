@@ -52,6 +52,13 @@ public class CinemaController {
         return new ResponseEntity<>(createdCinema, HttpStatus.CREATED);
     }
 
+    //Get all cinemas
+    @PreAuthorize("hasAuthority('admin:read')")
+    @GetMapping
+    public List<Cinema> getAllCinemas() {
+        return cinemaRepository.findAll();
+    }
+
     //Get Response of specified cinema by id
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/{id}")

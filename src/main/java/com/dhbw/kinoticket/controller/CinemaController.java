@@ -31,7 +31,7 @@ public class CinemaController {
 
     //Create Cinema
     @PreAuthorize("hasAuthority('admin:create')")
-    @PostMapping(value = "/")
+    @PostMapping(value = "")
     public ResponseEntity<?> createCinema(@RequestBody CreateCinemaRequest createCinemaRequest) {
         var locationAddress = LocationAddress
                 .builder()

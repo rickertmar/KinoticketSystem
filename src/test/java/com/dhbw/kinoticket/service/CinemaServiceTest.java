@@ -1,6 +1,7 @@
 package com.dhbw.kinoticket.service;
 
 import com.dhbw.kinoticket.repository.CinemaRepository;
+import com.dhbw.kinoticket.repository.LocationAddressRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -14,11 +15,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class CinemaServiceTest {
 
     @Mock private CinemaRepository cinemaRepository;
+    @Mock private LocationAddressRepository locationAddressRepository;
     private CinemaService underTest;
 
     @BeforeEach
     void setUp() {
-        underTest = new CinemaService(cinemaRepository);
+        underTest = new CinemaService(cinemaRepository, locationAddressRepository);
     }
 
     @Test

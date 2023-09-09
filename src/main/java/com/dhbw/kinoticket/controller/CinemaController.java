@@ -39,10 +39,11 @@ public class CinemaController {
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/{id}")
     public ResponseEntity<?> getCinemaById(@PathVariable Long id) {
-        try {
-            Cinema cinema = cinemaService.getCinemaById(id);
-            return new ResponseEntity<>(cinema, HttpStatus.FOUND);
-        } catch (Exception e) {
+        Cinema cinema = cinemaService.getCinemaById(id);
+
+        if (cinema != null) {
+            return new ResponseEntity<Cinema>(cinema, HttpStatus.OK);
+        } else {
             return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
         }
     }

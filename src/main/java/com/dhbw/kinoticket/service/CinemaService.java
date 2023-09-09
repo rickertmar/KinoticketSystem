@@ -5,6 +5,7 @@ import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.repository.CinemaRepository;
 import com.dhbw.kinoticket.repository.LocationAddressRepository;
 import com.dhbw.kinoticket.request.CreateCinemaRequest;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.sql.SQLOutput;
 import java.util.List;
 
 @Component
@@ -94,10 +96,14 @@ public class CinemaService {
     //LocationAddress of Cinema
     // ----------------------------------------------------------------
     //Update location address of specific cinema
+    @Transactional
     public Cinema updateLocationAddress(Long id,
                                         @Valid LocationAddress locationAddress) {
         Cinema cinema = getCinemaById(id);
+        Long oldLocationId = cinema.getLocationAddress().getId();
+        locationAddressRepository.deleteById(oldLocationId);
         cinema.setLocationAddress(locationAddress);
+
         return cinemaRepository.save(cinema);
     }
 }

@@ -5,7 +5,9 @@ import com.dhbw.kinoticket.entity.CinemaHall;
 import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.repository.CinemaHallRepository;
 import com.dhbw.kinoticket.repository.CinemaRepository;
+import com.dhbw.kinoticket.repository.SeatRepository;
 import com.dhbw.kinoticket.request.CreateSeatRequest;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,11 +24,13 @@ import java.util.List;
 public class CinemaHallService {
 
     @Autowired
+    private final SeatRepository seatRepository;
+    @Autowired
     private final CinemaHallRepository cinemaHallRepository;
     @Autowired
-    private CinemaRepository cinemaRepository;
+    private final CinemaRepository cinemaRepository;
     @Autowired
-    private CinemaService cinemaService;
+    private final CinemaService cinemaService;
 
 
     //Get CinemaHall by id
@@ -58,12 +62,20 @@ public class CinemaHallService {
     }
 
     //Update SeatsList of a CinemaHall object
+    @Transactional
     public CinemaHall updateSeatsOfCinemaHall(Long id,
                                               List<CreateSeatRequest> createSeatRequests) {
         CinemaHall cinemaHall = getCinemaHallById(id);
-        List<Seat> seats = convertSeatDTOsToSeats(createSeatRequests, cinemaHall);
-        cinemaHall.setSeats(seats);
+        List<Seat> oldSeatList = cinemaHall.getSeats();
+        cinemaHall.setSeats(null);
+        List<Seat> newSeats = convertSeatDTOsToSeats(createSeatRequests, cinemaHall);
+        cinemaHall.setSeats(newSeats);
         cinemaHallRepository.save(cinemaHall);
+
+        for (Seat oldSeat : oldSeatList) {
+            seatRepository.delete(oldSeat);
+        }
+
         return cinemaHall;
     }
 

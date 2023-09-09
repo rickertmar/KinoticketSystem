@@ -4,6 +4,7 @@ import com.dhbw.kinoticket.entity.Cinema;
 import com.dhbw.kinoticket.entity.CinemaHall;
 import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.repository.CinemaHallRepository;
+import com.dhbw.kinoticket.repository.CinemaRepository;
 import com.dhbw.kinoticket.request.CreateSeatRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,8 @@ public class CinemaHallService {
     @Autowired
     private final CinemaHallRepository cinemaHallRepository;
     @Autowired
+    private CinemaRepository cinemaRepository;
+    @Autowired
     private CinemaService cinemaService;
 
 
@@ -40,7 +43,7 @@ public class CinemaHallService {
         cinema.getCinemaHallList().add(cinemaHall);
         cinemaHall.setCinema(cinema);
         cinemaHallRepository.save(cinemaHall);
-        cinemaService.saveCinema(cinema);
+        cinemaRepository.save(cinema);
         return cinemaHall;
     }
 
@@ -70,7 +73,7 @@ public class CinemaHallService {
             CinemaHall cinemaHall = getCinemaHallById(id);
             Cinema cinema = cinemaHall.getCinema();
             cinema.getCinemaHallList().remove(cinemaHall);
-            cinemaService.saveCinema(cinema);
+            cinemaRepository.save(cinema);
             cinemaHallRepository.delete(cinemaHall);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting");

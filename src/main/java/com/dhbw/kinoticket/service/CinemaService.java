@@ -32,7 +32,14 @@ public class CinemaService {
 
     //Find existing Cinema by id
     public Cinema getCinemaById(Long id) {
-        return cinemaRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CINEMA_NOT_FOUND"));
+        List<Cinema> cinemas = cinemaRepository.findAll();
+        Cinema cinema = null;
+        for (Cinema cinemaRecord:cinemas) {
+            if (cinemaRecord.getId() == id) {
+                cinema = cinemaRecord;
+            }
+        }
+        return cinema;
     }
 
     //Create new Cinema
@@ -50,7 +57,7 @@ public class CinemaService {
                 .name(createCinemaRequest.getName())
                 .build();
         cinema.setLocationAddress(createdLocation);
-        saveCinema(cinema);
+        cinemaRepository.save(cinema);
         return cinema;
     }
 
@@ -75,15 +82,11 @@ public class CinemaService {
     //Delete Cinema by id
     public void deleteCinema(Long id) {
         try {
-            cinemaRepository.deleteById(id);
+            Cinema cinema = cinemaRepository.findById(id).get();
+            cinemaRepository.delete(cinema);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting");
         }
-    }
-
-    //Save Cinema
-    public Cinema saveCinema(Cinema cinema) {
-        return cinemaRepository.save(cinema);
     }
 
 

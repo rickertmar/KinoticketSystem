@@ -26,8 +26,13 @@ public class CinemaController {
     //Get all cinemas
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping
-    public List<Cinema> getAllCinemas() {
-        return cinemaService.getAllCinemas();
+    public ResponseEntity<List<Cinema>> getAllCinemas() {
+        try {
+            List<Cinema> cinemas = cinemaService.getAllCinemas();
+            return new ResponseEntity<List<Cinema>>(cinemas, HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     //Get Response of specified cinema by id
@@ -36,7 +41,7 @@ public class CinemaController {
     public ResponseEntity<?> getCinemaById(@PathVariable Long id) {
         try {
             Cinema cinema = cinemaService.getCinemaById(id);
-            return ResponseEntity.ok(cinema);
+            return new ResponseEntity<>(cinema, HttpStatus.FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
         }
@@ -100,7 +105,7 @@ public class CinemaController {
     // ----------------------------------------------------------------
 
     //Get specific CinemaHall of Cinema
-    @PreAuthorize("hasAuthority('admin:read')")
+    //@PreAuthorize("hasAuthority('admin:read')") // needs to be reached for CinemaHall plan in frontend
     @GetMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}")
     public ResponseEntity<?> getCinemaHall(@PathVariable Long cinemaId,
                                            @PathVariable Long cinemaHallId) {
@@ -174,22 +179,22 @@ Create Cinema json format
 Add Seats to CinemaHall
 [
     {
-        "seatRow": 1,
-        "number": 101,
+        "seatRow": "A",
+        "number": 1,
         "xloc": 10,
         "yloc": 20,
         "blocked": false
     },
     {
-        "seatRow": 1,
-        "number": 102,
+        "seatRow": "A",
+        "number": 2,
         "xloc": 20,
         "yloc": 20,
         "blocked": true
     },
     {
-        "seatRow": 1,
-        "number": 103,
+        "seatRow": "A",
+        "number": 3,
         "xloc": 30,
         "yloc": 20,
         "blocked": false

@@ -3,6 +3,7 @@ package com.dhbw.kinoticket.controller;
 import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.repository.LocationAddressRepository;
+import com.dhbw.kinoticket.repository.TokenRepository;
 import com.dhbw.kinoticket.repository.UserRepository;
 import com.dhbw.kinoticket.request.CreateLocationRequest;
 import com.dhbw.kinoticket.request.UpdateUserRequest;
@@ -23,6 +24,7 @@ import java.util.List;
 public class UserController {
     private final UserRepository userRepository;
     private final LocationAddressRepository locationAddressRepository;
+    private final TokenRepository tokenRepository;
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/id/{id}")
     public User getUserById(@PathVariable("id") Long id) {
@@ -42,7 +44,8 @@ public class UserController {
     @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping(value = "/id/{id}")
     public void deleteUserById(@PathVariable("id") Long id) {
-        userRepository.deleteById(id);
+        User user = userRepository.findById(id).get();
+        userRepository.delete(user);
     }
     @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping(value = "/email/{email}")
@@ -66,7 +69,9 @@ public class UserController {
     @DeleteMapping(value = "")
     public void deleteSelf(HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
-        userRepository.deleteById(userRepository.findByEmail(principal.getName()).orElseThrow().getId());
+        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
+
+        userRepository.delete(user); //and associated tokens with its foreign keys -> cascade option in token entity
     }
     @PutMapping(value = "")
     public ResponseEntity<UserResponse> updateSelf(@RequestBody UpdateUserRequest updateUserRequest, HttpServletRequest httpServletRequest) {

@@ -27,7 +27,7 @@ public class User implements UserDetails {
     private Role role;
 
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Token> tokens;
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="shippingLocation_id", referencedColumnName = "id")

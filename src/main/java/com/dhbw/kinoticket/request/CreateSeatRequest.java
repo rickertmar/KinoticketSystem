@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateSeatRequest {
-    private int seatRow;
+    private char seatRow;
     private int number;
     private int xLoc; //relative X-Location in theatre
     private int yLoc; //relative Y-Location in theatre

@@ -117,9 +117,10 @@ public class CinemaController {
     //Create and add CinemaHall
     @PreAuthorize("hasAuthority('admin:create')")
     @PostMapping(value = "/{id}/cinemahalls")
-    public ResponseEntity<?> addCinemaHall(@PathVariable Long id) {
+    public ResponseEntity<?> addCinemaHall(@PathVariable Long id,
+                                           @RequestBody String name) {
         try {
-            return new ResponseEntity<>(cinemaHallService.createCinemaHallAndAddToCinema(id), HttpStatus.OK);
+            return new ResponseEntity<>(cinemaHallService.createCinemaHallAndAddToCinema(id, name), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to add CinemaHall.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -139,15 +140,16 @@ public class CinemaController {
         }
     }
 
-    //Update SeatsList of a CinemaHall object
+    //Update CinemaHall object
     @PreAuthorize("hasAuthority('admin:update')")
     @PutMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}/seats")
     public ResponseEntity<?> updateCinemaHallSeats(
             @PathVariable Long cinemaId,
             @PathVariable Long cinemaHallId,
+            @RequestParam(name = "New_Name") String name,
             @RequestBody List<CreateSeatRequest> seatDTOList) {
         try {
-            return new ResponseEntity<>(cinemaHallService.updateSeatsOfCinemaHall(cinemaHallId, seatDTOList), HttpStatus.OK);
+            return new ResponseEntity<>(cinemaHallService.updateSeatsOfCinemaHall(cinemaHallId, name, seatDTOList), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to update CinemaHall.", HttpStatus.INTERNAL_SERVER_ERROR);
         }

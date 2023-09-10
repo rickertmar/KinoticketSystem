@@ -35,14 +35,23 @@ public class CinemaHallService {
 
     //Get CinemaHall by id
     public CinemaHall getCinemaHallById(Long id) {
-        return cinemaHallRepository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CINEMA_HALL_NOT_FOUND"));
+        List<CinemaHall> cinemaHalls = cinemaHallRepository.findAll();
+        CinemaHall cinemaHall = null;
+        for (CinemaHall cinemaHallRecord:cinemaHalls) {
+            if (cinemaHallRecord.getId() == id) {
+                cinemaHall = cinemaHallRecord;
+            }
+        }
+        return cinemaHall;
     }
 
     //Create CinemaHall and add to Cinema
-    public CinemaHall createCinemaHallAndAddToCinema(Long id) {
+    public CinemaHall createCinemaHallAndAddToCinema(Long id,
+                                                     String name) {
         Cinema cinema = cinemaService.getCinemaById(id);
         //Build the new CinemaHall object
         var cinemaHall = CinemaHall.builder()
+                .name(name)
                 .build();
         cinema.getCinemaHallList().add(cinemaHall);
         cinemaHall.setCinema(cinema);
@@ -61,14 +70,16 @@ public class CinemaHallService {
         return cinemaHall;
     }
 
-    //Update SeatsList of a CinemaHall object
+    //Update CinemaHall object
     @Transactional
     public CinemaHall updateSeatsOfCinemaHall(Long id,
+                                              String name,
                                               List<CreateSeatRequest> createSeatRequests) {
         CinemaHall cinemaHall = getCinemaHallById(id);
         List<Seat> oldSeatList = cinemaHall.getSeats();
         cinemaHall.setSeats(null);
         List<Seat> newSeats = convertSeatDTOsToSeats(createSeatRequests, cinemaHall);
+        cinemaHall.setName(name);
         cinemaHall.setSeats(newSeats);
         cinemaHallRepository.save(cinemaHall);
 
@@ -94,7 +105,7 @@ public class CinemaHallService {
 
 
     //Method to convert seat dto object to seats list
-    private List<Seat> convertSeatDTOsToSeats(List<CreateSeatRequest> seatDTOList,
+    public List<Seat> convertSeatDTOsToSeats(List<CreateSeatRequest> seatDTOList,
                                               CinemaHall cinemaHall) {
         List<Seat> seats = new ArrayList<>();
         for (CreateSeatRequest seatDTO : seatDTOList) {

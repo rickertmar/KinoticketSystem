@@ -21,6 +21,8 @@ public class CinemaHall {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private String name;
+
     @OneToMany(mappedBy = "cinemaHall", cascade = CascadeType.ALL)
     private List<Seat> seats;
 

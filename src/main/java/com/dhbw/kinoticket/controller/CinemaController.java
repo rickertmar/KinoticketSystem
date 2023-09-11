@@ -42,7 +42,7 @@ public class CinemaController {
         Cinema cinema = cinemaService.getCinemaById(id);
 
         if (cinema != null) {
-            return new ResponseEntity<Cinema>(cinema, HttpStatus.OK);
+            return new ResponseEntity<Cinema>(cinema, HttpStatus.FOUND);
         } else {
             return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
         }
@@ -53,7 +53,8 @@ public class CinemaController {
     @PostMapping(value = "")
     public ResponseEntity<?> createCinema(@RequestBody CreateCinemaRequest createCinemaRequest) {
         try {
-            return new ResponseEntity<>(cinemaService.createCinema(createCinemaRequest), HttpStatus.CREATED);
+            Cinema createCinema = cinemaService.createCinema(createCinemaRequest);
+            return new ResponseEntity<>(createCinema, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -61,8 +62,8 @@ public class CinemaController {
 
     //Update Cinema
     @PreAuthorize("hasAuthority('admin:update')")
-    @PutMapping(value = "")
-    public ResponseEntity<?> updateCinema(@RequestParam Long id,
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<?> updateCinema(@PathVariable Long id,
                                           @RequestBody CreateCinemaRequest createCinemaRequest) {
         try {
             return new ResponseEntity<>(cinemaService.updateCinema(id, createCinemaRequest), HttpStatus.OK);

@@ -5,9 +5,7 @@ import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.repository.CinemaRepository;
 import com.dhbw.kinoticket.repository.LocationAddressRepository;
 import com.dhbw.kinoticket.request.CreateCinemaRequest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +19,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest(classes = {CinemaServiceTest.class})
 class CinemaServiceTest {
 
@@ -38,6 +37,7 @@ class CinemaServiceTest {
 
 
     @Test
+    @Order(1)
     void test_GetCinemaById_WhenIdIsValid_ThenReturnCinema() {
         // Arrange
         Long cinemaId = 1L;
@@ -56,6 +56,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(2)
     void test_GetCinemaById_WhenIdIsInvalid_ThenReturnNull() {
         // Arrange
         Long cinemaId = 2L;
@@ -72,6 +73,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(3)
     void test_GetAllCinemas_WhenAllCinemasFound_ThenSuccess() {
         // Arrange
         List<Cinema> myCinemas = new ArrayList<Cinema>();
@@ -87,6 +89,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(4)
     void test_GetAllCinemas_WhenNoCinemasFound_ThenListIsEmpty() {
         // Arrange
         List<Cinema> myCinemas = new ArrayList<Cinema>();
@@ -99,6 +102,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(5)
     void test_CreateCinema_WhenValidRequest_ThenCinemaCreated() {
         // Arrange
         CreateCinemaRequest request = new CreateCinemaRequest("Test cinema", "Test street", "Test city", "Test country", "11111");
@@ -119,6 +123,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(6)
     void test_CreateCinema_WhenNullFields_ThenRepositoriesNotCalled() {
         // Arrange
         CreateCinemaRequest request = new CreateCinemaRequest(null, null, null, null, null);
@@ -133,6 +138,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(7)
     void test_UpdateCinema_WhenCinemaExists_ThenCinemaIsUpdated() {
         // Arrange
         Long cinemaId = 1L;
@@ -161,6 +167,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(8)
     void test_UpdateCinema_WhenCinemaDoesNotExist_ThenExceptionIsThrown() {
         // Arrange
         Long cinemaId = 2L;
@@ -180,6 +187,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(9)
     void test_DeleteCinema_Success() {
         // Arrange
         LocationAddress location = new LocationAddress(3L, "Test street 3", "Test city 3", "Test country 3", "33333");
@@ -197,6 +205,7 @@ class CinemaServiceTest {
     }
 
     @Test
+    @Order(10)
     void test_DeleteCinema_WhenCinemaNotFound_ThenExceptionIsThrown() {
         // Arrange
         Long cinemaId = 2L;
@@ -212,12 +221,7 @@ class CinemaServiceTest {
     }
 
     @Test
-    @Disabled
-        // Testing needed? GetCinema and save is already tested
-    void test_UpdateLocationAddress() {
-    }
-
-    @Test
+    @Order(11)
     void test_UpdateLocationAddress_WhenInvalidId_ThenExceptionThrown() {
         // Arrange
         Long cinemaId = 2L;
@@ -229,5 +233,12 @@ class CinemaServiceTest {
         // Act and Assert
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> cinemaService.updateLocationAddress(cinemaId, newLocationAddress));
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
+
+    @Test
+    @Order(12)
+    @Disabled
+        // Testing needed? GetCinema and save is already tested
+    void test_UpdateLocationAddress() {
     }
 }

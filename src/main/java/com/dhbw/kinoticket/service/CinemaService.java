@@ -45,6 +45,13 @@ public class CinemaService {
 
     //Create new Cinema
     public Cinema createCinema(@Valid CreateCinemaRequest createCinemaRequest) {
+        // LocationAddressRepository.save should only be called if requiered parameters are provided
+        if (createCinemaRequest.getStreet() == null || createCinemaRequest.getCity() == null ||
+                createCinemaRequest.getCountry() == null || createCinemaRequest.getPostcode() == null) {
+            return null;
+        }
+
+        // Create Cinema and associated LocationAddress
         var locationAddress = LocationAddress
                 .builder()
                 .street(createCinemaRequest.getStreet())
@@ -99,6 +106,9 @@ public class CinemaService {
     public Cinema updateLocationAddress(Long id,
                                         @Valid LocationAddress locationAddress) {
         Cinema cinema = getCinemaById(id);
+        if (cinema == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cinema not found");
+        }
         Long oldLocationId = cinema.getLocationAddress().getId();
         locationAddressRepository.deleteById(oldLocationId);
         cinema.setLocationAddress(locationAddress);

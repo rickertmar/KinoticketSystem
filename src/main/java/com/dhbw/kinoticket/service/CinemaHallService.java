@@ -64,6 +64,9 @@ public class CinemaHallService {
     public CinemaHall addSeatsToCinemaHall(Long id,
                                            List<CreateSeatRequest> createSeatRequests) {
         CinemaHall cinemaHall = getCinemaHallById(id);
+        if (cinemaHall == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cinema hall not found");
+        }
         List<Seat> seats = convertSeatDTOsToSeats(createSeatRequests, cinemaHall);
         cinemaHall.getSeats().addAll(seats);
         cinemaHallRepository.save(cinemaHall);
@@ -76,6 +79,9 @@ public class CinemaHallService {
                                               String name,
                                               List<CreateSeatRequest> createSeatRequests) {
         CinemaHall cinemaHall = getCinemaHallById(id);
+        if (cinemaHall == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cinema hall not found");
+        }
         List<Seat> oldSeatList = cinemaHall.getSeats();
         cinemaHall.setSeats(null);
         List<Seat> newSeats = convertSeatDTOsToSeats(createSeatRequests, cinemaHall);
@@ -91,6 +97,7 @@ public class CinemaHallService {
     }
 
     //Delete CinemaHall
+    @Transactional
     public void deleteCinemaHall(Long id) {
         try {
             CinemaHall cinemaHall = getCinemaHallById(id);

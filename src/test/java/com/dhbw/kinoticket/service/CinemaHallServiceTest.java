@@ -18,33 +18,39 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {CinemaHallServiceTest.class})
-class CinemaHallServiceTest {
+public class CinemaHallServiceTest {
+
+    @Mock
+    private SeatRepository seatRepository;
 
     @Mock
     private CinemaHallRepository cinemaHallRepository;
+
     @Mock
     private CinemaRepository cinemaRepository;
-    @Mock
-    private SeatRepository seatRepository;
+
     @Mock
     private CinemaService cinemaService;
+
     @InjectMocks
     private CinemaHallService cinemaHallService;
 
     @BeforeEach
-    void setUp() {
+    public void setUp() {
         cinemaHallService = new CinemaHallService(seatRepository, cinemaHallRepository, cinemaRepository, cinemaService);
     }
 
     @Test
-    void test_getCinemaHallById_Found() {
+    void test_getCinemaHallById_WhenFound_ThenReturnCinemaHall() {
         // Arrange
         Long cinemaHallId = 1L;
         String cinemaHallName = "Name 1";
@@ -65,7 +71,7 @@ class CinemaHallServiceTest {
     }
 
     @Test
-    void test_getCinemaHallById_NotFound() {
+    void test_getCinemaHallById_WhenNotFound_ThenAssertNull() {
         // Arrange
         Long cinemaHallId = 2L;
         List<CinemaHall> cinemaHalls = new ArrayList<>();
@@ -81,12 +87,12 @@ class CinemaHallServiceTest {
     }
 
     @Test
-    void test_createCinemaHallAndAddToCinema() {
+    void test_CreateCinemaHallAndAddToCinema_WhenCalledWithValidArguments() {
         // Arrange
         Long cinemaId = 1L;
         String name = "CinemaHall 1";
         Cinema cinema = new Cinema(cinemaId, "Test cinema 1", new LocationAddress(1L, "Test street 1", "Test city 1", "Test country 1", "11111"), new ArrayList<>());
-        CinemaHall cinemaHall = new CinemaHall(1L, name,null, null);
+        CinemaHall cinemaHall = new CinemaHall(1L, name, null, null);
 
         // Mock behavior for getCinemaById
         when(cinemaService.getCinemaById(cinemaId)).thenReturn(cinema);
@@ -109,53 +115,56 @@ class CinemaHallServiceTest {
     }
 
     @Test
-    void test_addSeatsToCinemaHall() {
+    void test_AddSeatsToCinemaHall_WhenSeatsAdded_ThenCinemaHallUpdated() {
         // Arrange
         Long cinemaHallId = 1L;
-        String name = "CinemaHall 1";
         List<CreateSeatRequest> createSeatRequests = new ArrayList<>();
         createSeatRequests.add(new CreateSeatRequest('A', 1, 10, 10, true));
-        createSeatRequests.add(new CreateSeatRequest('A', 2, 20, 10, false));
-        createSeatRequests.add(new CreateSeatRequest('A', 3, 30, 10, true));
-
-        CinemaHall cinemaHall = new CinemaHall(cinemaHallId, name,null, null);
-        List<Seat> seatsToAdd = new ArrayList<>();
-        seatsToAdd.add(new Seat(1L,'A', 1, 10, 10, true, null));
-        seatsToAdd.add(new Seat(2L,'A', 2, 20, 10, false, null));
-        seatsToAdd.add(new Seat(3L,'A', 3, 30, 10, true, null));
-        cinemaHall.setSeats(seatsToAdd);
-
+        CinemaHall cinemaHall = new CinemaHall(cinemaHallId, "CinemaHall 1", new ArrayList<>(), null);
         List<CinemaHall> cinemaHallList = new ArrayList<>();
         cinemaHallList.add(cinemaHall);
 
         // Mock
         when(cinemaHallRepository.findAll()).thenReturn(cinemaHallList);
-        when(cinemaHallRepository.save(any(CinemaHall.class))).thenReturn(cinemaHall);
 
         // Act
         CinemaHall updatedCinemaHall = cinemaHallService.addSeatsToCinemaHall(cinemaHallId, createSeatRequests);
 
         // Assert
-        assertEquals(cinemaHall, updatedCinemaHall);
+        assertEquals(cinemaHallId, updatedCinemaHall.getId());
+        assertEquals(createSeatRequests.size(), updatedCinemaHall.getSeats().size());
+        verify(cinemaHallRepository, times(1)).save(any(CinemaHall.class));
     }
 
     @Test
-    void test_updateSeatsOfCinemaHall() {
+    void test_AddSeatsToCinemaHall_WhenCinemaHallDoesNotExist_ThenExceptionIsThrown() {
+        // Arrange
+        Long cinemaHallId = 1L;
+        List<CreateSeatRequest> createSeatRequests = new ArrayList<>();
+        createSeatRequests.add(new CreateSeatRequest('A', 1, 10, 10, true));
+        List<CinemaHall> cinemaHallList = new ArrayList<>();
+
+        // Mock
+        when(cinemaHallRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act and Assert
+        assertThrows(ResponseStatusException.class, () -> cinemaHallService.addSeatsToCinemaHall(cinemaHallId, createSeatRequests));
+    }
+
+    @Test
+    void test_updateSeatsOfCinemaHall_WhenCinemaExists_ThenCinemaHallUpdated() {
         // Arrange
         Long cinemaHallId = 1L;
         String newName = "Updated Cinema Hall Name";
-        List<CreateSeatRequest> newSeatRequests = new ArrayList<>(); // Replace with your seat request data
+        List<CreateSeatRequest> newSeatRequests = new ArrayList<>();
 
         // Mock behavior to return a cinema hall with seats when getCinemaHallById is called
         CinemaHall existingCinemaHall = new CinemaHall(cinemaHallId, "Cinema Hall Name", null, null);
-        List<Seat> oldSeats = new ArrayList<>(); // Replace with your old seat data
+        List<Seat> oldSeats = new ArrayList<>();
         existingCinemaHall.setSeats(oldSeats);
         List<CinemaHall> cinemaHallList = new ArrayList<>();
         cinemaHallList.add(existingCinemaHall);
         when(cinemaHallRepository.findAll()).thenReturn(cinemaHallList);
-
-        // Mock behavior for seatRepository.save and seatRepository.delete
-        when(seatRepository.save(any(Seat.class))).thenReturn(null);
 
         // Act
         CinemaHall updatedCinemaHall = cinemaHallService.updateSeatsOfCinemaHall(cinemaHallId, newName, newSeatRequests);
@@ -167,7 +176,8 @@ class CinemaHallServiceTest {
     }
 
     @Test
-    @Disabled // cinemaHall.getCinema() throws NullPointerException because it is not mocked
+    @Disabled
+        // cinemaHall.getCinema() throws NullPointerException because it is not mocked
     void test_deleteCinemaHall_Success() {
         // Arrange
         Long cinemaHallId = 1L;
@@ -183,7 +193,9 @@ class CinemaHallServiceTest {
         // Mock behavior to return cinema by ID
         when(cinemaRepository.findById(1L)).thenReturn(Optional.of(cinema));
 
-        when(cinemaHall.getCinema()).thenReturn(cinema);
+        // Create a mock object for CinemaHall
+        CinemaHall mockCinemaHall = mock(CinemaHall.class);
+        when(mockCinemaHall.getCinema()).thenReturn(cinema);
 
         // Act
         cinemaHallService.deleteCinemaHall(cinemaHallId);
@@ -195,50 +207,50 @@ class CinemaHallServiceTest {
     }
 
     @Test
-    public void testDeleteCinemaHall_Error() {
+    void test_DeleteCinemaHall_WhenCinemaHallDoesNotExist_ThenExceptionIsThrown() {
         // Arrange
-        Long cinemaHallId = 2L; // A cinema hall ID that does not exist
-
-        // Mock behavior to throw an exception when trying to delete
-        when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.empty());
+        Long cinemaHallId = 2L;
 
         // Act and Assert
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> cinemaHallService.deleteCinemaHall(cinemaHallId));
-
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, exception.getStatusCode());
     }
 
     @Test
-    void test_convertSeatDTOsToSeats() {
+    public void test_ConvertSeatDTOsToSeats_WhenGivenValidInputs_ThenReturnsCorrectSeats() {
         // Arrange
         List<CreateSeatRequest> seatDTOList = new ArrayList<>();
         seatDTOList.add(new CreateSeatRequest('A', 1, 10, 20, false));
         seatDTOList.add(new CreateSeatRequest('B', 2, 15, 25, true));
-
-        CinemaHall cinemaHall = mock(CinemaHall.class);
+        CinemaHall cinemaHall = new CinemaHall();
 
         // Act
         List<Seat> seats = cinemaHallService.convertSeatDTOsToSeats(seatDTOList, cinemaHall);
 
         // Assert
-        assertEquals(2, seats.size());
+        assertThat(seats).hasSize(seatDTOList.size());
+        for (int i = 0; i < seats.size(); i++) {
+            Seat seat = seats.get(i);
+            CreateSeatRequest seatDTO = seatDTOList.get(i);
+            assertThat(seat.getSeatRow()).isEqualTo(seatDTO.getSeatRow());
+            assertThat(seat.getNumber()).isEqualTo(seatDTO.getNumber());
+            assertThat(seat.getXLoc()).isEqualTo(seatDTO.getXLoc());
+            assertThat(seat.getYLoc()).isEqualTo(seatDTO.getYLoc());
+            assertThat(seat.isBlocked()).isEqualTo(seatDTO.isBlocked());
+            assertThat(seat.getCinemaHall()).isEqualTo(cinemaHall);
+        }
+    }
 
-        // Verify the properties of the first seat
-        Seat firstSeat = seats.get(0);
-        assertEquals('A', firstSeat.getSeatRow());
-        assertEquals(1, firstSeat.getNumber());
-        assertEquals(10, firstSeat.getXLoc());
-        assertEquals(20, firstSeat.getYLoc());
-        assertFalse(firstSeat.isBlocked());
-        assertEquals(cinemaHall, firstSeat.getCinemaHall());
+    @Test
+    public void test_ConvertSeatDTOsToSeats_WhenGivenEmptyList_ThenReturnsEmptySeats() {
+        // Arrange
+        List<CreateSeatRequest> seatDTOList = new ArrayList<>();
+        CinemaHall cinemaHall = new CinemaHall();
 
-        // Verify the properties of the second seat
-        Seat secondSeat = seats.get(1);
-        assertEquals('B', secondSeat.getSeatRow());
-        assertEquals(2, secondSeat.getNumber());
-        assertEquals(15, secondSeat.getXLoc());
-        assertEquals(25, secondSeat.getYLoc());
-        assertTrue(secondSeat.isBlocked());
-        assertEquals(cinemaHall, secondSeat.getCinemaHall());
+        // Act
+        List<Seat> seats = cinemaHallService.convertSeatDTOsToSeats(seatDTOList, cinemaHall);
+
+        // Assert
+        assertThat(seats).isEmpty();
     }
 }

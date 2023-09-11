@@ -18,8 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = {CinemaServiceTest.class})
@@ -32,15 +31,48 @@ class CinemaServiceTest {
     @InjectMocks
     private CinemaService cinemaService;
 
-    public List<Cinema> myCinemas;
-
     @BeforeEach
     void setUp() {
         cinemaService = new CinemaService(cinemaRepository, locationAddressRepository);
     }
 
+
     @Test
-    void test_GetAllCinemas() {
+    void test_GetCinemaById_WhenIdIsValid_ThenReturnCinema() {
+        // Arrange
+        Long cinemaId = 1L;
+        Cinema cinema = new Cinema(cinemaId, "Test cinema 1", new LocationAddress(1L, "Test street 1", "Test city 1", "Test country 1", "11111"), new ArrayList<>());
+        List<Cinema> cinemaList = new ArrayList<>();
+        cinemaList.add(cinema);
+
+        // Mock
+        when(cinemaRepository.findAll()).thenReturn(cinemaList);
+
+        // Act
+        Cinema result = cinemaService.getCinemaById(cinemaId);
+
+        // Assert
+        assertEquals(cinema, result);
+    }
+
+    @Test
+    void test_GetCinemaById_WhenIdIsInvalid_ThenReturnNull() {
+        // Arrange
+        Long cinemaId = 2L;
+        List<Cinema> cinemaList = new ArrayList<>();
+
+        // Mock
+        when(cinemaRepository.findAll()).thenReturn(cinemaList);
+
+        // Act
+        Cinema result = cinemaService.getCinemaById(cinemaId);
+
+        // Assert
+        assertNull(result);
+    }
+
+    @Test
+    void test_GetAllCinemas_WhenAllCinemasFound_ThenSuccess() {
         // Arrange
         List<Cinema> myCinemas = new ArrayList<Cinema>();
         myCinemas.add(new Cinema(1L, "Test cinema 1", new LocationAddress(1L, "Test street 1", "Test city 1", "Test country 1", "11111"), new ArrayList<>()));
@@ -55,37 +87,53 @@ class CinemaServiceTest {
     }
 
     @Test
-    void test_GetCinemaById_Found() {
-        //Arrange
-        List<Cinema> myCinemas = new ArrayList<Cinema>();
-        myCinemas.add(new Cinema(1L, "Test cinema 1", new LocationAddress(1L, "Test street 1", "Test city 1", "Test country 1", "11111"), new ArrayList<>()));
-        myCinemas.add(new Cinema(2L, "Test cinema 2", new LocationAddress(2L, "Test street 2", "Test city 2", "Test country 2", "22222"), new ArrayList<>()));
-        myCinemas.add(new Cinema(3L, "Test cinema 3", new LocationAddress(3L, "Test street 3", "Test city 3", "Test country 3", "33333"), new ArrayList<>()));
-        Long cinemaId = 1L;
-
-        // Mock
-        when(cinemaRepository.findAll()).thenReturn(myCinemas);
-
-        // Act and Assert
-        assertEquals(cinemaId, cinemaService.getCinemaById(cinemaId).getId());
-    }
-
-    @Test
-    void test_CreateCinema() {
+    void test_GetAllCinemas_WhenNoCinemasFound_ThenListIsEmpty() {
         // Arrange
-        LocationAddress location = new LocationAddress(3L, "Test street 3", "Test city 3", "Test country 3", "33333");
-        CreateCinemaRequest cinemaRequest = new CreateCinemaRequest("Test cinema 3", "Test street 3", "Test city 3", "Test country 3", "33333");
-        Cinema cinema = new Cinema(3L, "Test cinema 3", location, new ArrayList<>());
+        List<Cinema> myCinemas = new ArrayList<Cinema>();
 
-        // Mock
-        when(cinemaRepository.save(cinema)).thenReturn(cinema);
+        // Mock behavior of cinemaRepository.findAll used in cinemaService.getAllCinemas
+        when(cinemaRepository.findAll()).thenReturn(myCinemas); //Mocking
 
         // Act and Assert
-        assertEquals(cinema.getName(), cinemaService.createCinema(cinemaRequest).getName());
+        assertEquals(0, cinemaService.getAllCinemas().size());
     }
 
     @Test
-    void test_UpdateCinema_Success() {
+    void test_CreateCinema_WhenValidRequest_ThenCinemaCreated() {
+        // Arrange
+        CreateCinemaRequest request = new CreateCinemaRequest("Test cinema", "Test street", "Test city", "Test country", "11111");
+        LocationAddress locationAddress = new LocationAddress(1L, "Test street", "Test city", "Test country", "11111");
+        Cinema cinema = new Cinema(1L, "Test cinema", locationAddress, new ArrayList<>());
+
+        // Mock
+        when(locationAddressRepository.save(any(LocationAddress.class))).thenReturn(locationAddress);
+        when(cinemaRepository.save(any(Cinema.class))).thenReturn(cinema);
+
+        // Act
+        Cinema result = cinemaService.createCinema(request);
+
+        // Assert
+        verify(locationAddressRepository, times(1)).save(any(LocationAddress.class));
+        verify(cinemaRepository, times(1)).save(any(Cinema.class));
+        assertEquals(cinema.getName(), result.getName());
+    }
+
+    @Test
+    void test_CreateCinema_WhenNullFields_ThenRepositoriesNotCalled() {
+        // Arrange
+        CreateCinemaRequest request = new CreateCinemaRequest(null, null, null, null, null);
+
+        // Act
+        Cinema result = cinemaService.createCinema(request);
+
+        // Assert
+        verify(locationAddressRepository, times(0)).save(any(LocationAddress.class));
+        verify(cinemaRepository, times(0)).save(any(Cinema.class));
+        assertNull(result);
+    }
+
+    @Test
+    void test_UpdateCinema_WhenCinemaExists_ThenCinemaIsUpdated() {
         // Arrange
         Long cinemaId = 1L;
         String updatedName = "Updated Cinema";
@@ -113,6 +161,25 @@ class CinemaServiceTest {
     }
 
     @Test
+    void test_UpdateCinema_WhenCinemaDoesNotExist_ThenExceptionIsThrown() {
+        // Arrange
+        Long cinemaId = 2L;
+        CreateCinemaRequest updateRequest = new CreateCinemaRequest();
+        updateRequest.setName("Updated Cinema");
+        updateRequest.setStreet("Updated Street");
+        updateRequest.setCity("Updated City");
+        updateRequest.setCountry("Updated Country");
+        updateRequest.setPostcode("Updated Postcode");
+
+        // Mock
+        when(cinemaRepository.findAll()).thenReturn(new ArrayList<>());
+
+        // Act and Assert
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> cinemaService.updateCinema(cinemaId, updateRequest));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+    }
+
+    @Test
     void test_DeleteCinema_Success() {
         // Arrange
         LocationAddress location = new LocationAddress(3L, "Test street 3", "Test city 3", "Test country 3", "33333");
@@ -130,7 +197,7 @@ class CinemaServiceTest {
     }
 
     @Test
-    public void testDeleteCinema_CinemaNotFound() {
+    void test_DeleteCinema_WhenCinemaNotFound_ThenExceptionIsThrown() {
         // Arrange
         Long cinemaId = 2L;
 
@@ -145,7 +212,22 @@ class CinemaServiceTest {
     }
 
     @Test
-    @Disabled // Testing needed? GetCinema and save is already tested
+    @Disabled
+        // Testing needed? GetCinema and save is already tested
     void test_UpdateLocationAddress() {
+    }
+
+    @Test
+    void test_UpdateLocationAddress_WhenInvalidId_ThenExceptionThrown() {
+        // Arrange
+        Long cinemaId = 2L;
+        LocationAddress newLocationAddress = new LocationAddress(2L, "New street", "New city", "New country", "22222");
+
+        // Mock
+        when(cinemaRepository.findById(cinemaId)).thenReturn(Optional.empty());
+
+        // Act and Assert
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> cinemaService.updateLocationAddress(cinemaId, newLocationAddress));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
-
+@Component
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -67,7 +68,7 @@ public class AuthenticationService {
         return AuthenticationResponse.builder().accessToken(jwtToken).refreshToken(refreshToken).build(); //returning Auth Token
     }
 
-    private void saveUserToken(User user, String jwtToken) {
+    void saveUserToken(User user, String jwtToken) {
         var token = Token.builder()
                 .user(user)
                 .token(jwtToken)
@@ -77,7 +78,7 @@ public class AuthenticationService {
                 .build();
         tokenRepository.save(token);
     }
-    private void revokeAllUserToken(User user) {
+    void revokeAllUserToken(User user) {
         var validUserTokens = tokenRepository.findAllValidTokenByUser(user.getId());
         if(validUserTokens.isEmpty()){
             return;

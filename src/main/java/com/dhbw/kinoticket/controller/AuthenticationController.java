@@ -8,6 +8,7 @@ import com.dhbw.kinoticket.service.LogoutService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -38,7 +39,12 @@ public class AuthenticationController {
         authenticationService.refreshToken(request, response);
     }
     @PostMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException{
-        logoutService.logout(request, response, (Authentication) request.getUserPrincipal());
+    public ResponseEntity<?> logout(HttpServletRequest request, HttpServletResponse response) throws IOException{
+        try {
+            logoutService.logout(request, response, (Authentication) request.getUserPrincipal());
+            return new ResponseEntity<>(HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
     }
 }

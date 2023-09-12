@@ -1,11 +1,21 @@
 
-7
 HELP.md,1\a\1a273f73b7a477b0745593641bd708a6182c7ad5
-8
-mvnw.cmd,1\f\1f1763f358c257ea3515417352b82b0165647ad1
-l
-<src/main/java/com/dhbw/kinoticket/KinoticketApplication.java,5\f\5f9e3312738749dc78afa2a852a5f53fd4b44847
 7
+pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
+i
+9src/main/java/com/dhbw/kinoticket/service/JwtService.java,c\5\c5306063f42c9cfd48b10b3746d6686805553d81
+b
+2src/main/java/com/dhbw/kinoticket/entity/User.java,e\6\e6d857e53ec7d984ce89ff2cd0e3124b4efea0d0
+o
+?src/main/java/com/dhbw/kinoticket/config/ApplicationConfig.java,4\2\42403ad026665d3457d14a1338e974d062f2e2b2
+l
+<src/main/java/com/dhbw/kinoticket/config/SecurityConfig.java,c\9\c9cd89ae90093467ef577e93ea0fee40fe4dd214
+u
+Esrc/main/java/com/dhbw/kinoticket/config/JwtAuthenticationFilter.java,2\f\2f4e71f7fcaf939838717d6d8639895219d0686b
+t
+Dsrc/main/java/com/dhbw/kinoticket/service/AuthenticationService.java,d\5\d58df80add181e6b89fa57eae2f5c332df8f0854
+=======
 pom.xml,4\4\442292b8a7efeabbe4cc176709b833b1792140ec
 u
 Esrc/main/java/com/dhbw/kinoticket/config/JwtAuthenticationFilter.java,2\f\2f4e71f7fcaf939838717d6d8639895219d0686b
+

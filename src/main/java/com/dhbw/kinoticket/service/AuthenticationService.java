@@ -92,13 +92,16 @@ public class AuthenticationService {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String userEmail;
+
         if(authHeader!= null && authHeader.startsWith("Bearer ")) {
             refreshToken = authHeader.substring(7);
             userEmail = jwtService.extractUsername(refreshToken);
             if(userEmail != null) {
                 var user = this.userRepository.findByEmail(userEmail).orElseThrow();
+                Map<String, Object> userClaims = new TreeMap<String, Object>();
+                userClaims.put("ROLE", user.getRole());
                 if(jwtService.isTokenValid(refreshToken, user)){
-                    var accessToken = jwtService.generateToken(user);
+                    var accessToken = jwtService.generateToken(userClaims, user);
                     revokeAllUserToken(user);
                     saveUserToken(user, accessToken);
                     var authResponse = AuthenticationResponse.builder()

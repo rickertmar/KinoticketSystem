@@ -42,7 +42,7 @@ public class CinemaController {
         Cinema cinema = cinemaService.getCinemaById(id);
 
         if (cinema != null) {
-            return new ResponseEntity<Cinema>(cinema, HttpStatus.FOUND);
+            return new ResponseEntity<>(cinema, HttpStatus.FOUND);
         } else {
             return new ResponseEntity<>("Cinema not found.", HttpStatus.NOT_FOUND);
         }
@@ -111,8 +111,12 @@ public class CinemaController {
     @GetMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}")
     public ResponseEntity<?> getCinemaHall(@PathVariable Long cinemaId,
                                            @PathVariable Long cinemaHallId) {
-        CinemaHall cinemaHall = cinemaHallService.getCinemaHallById(cinemaHallId);
-        return ResponseEntity.ok(cinemaHall);
+        try {
+            CinemaHall cinemaHall = cinemaHallService.getCinemaHallById(cinemaHallId);
+            return new ResponseEntity<>(cinemaHall, HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     //Create and add CinemaHall
@@ -121,7 +125,7 @@ public class CinemaController {
     public ResponseEntity<?> addCinemaHall(@PathVariable Long id,
                                            @RequestBody String name) {
         try {
-            return new ResponseEntity<>(cinemaHallService.createCinemaHallAndAddToCinema(id, name), HttpStatus.OK);
+            return new ResponseEntity<>(cinemaHallService.createCinemaHallAndAddToCinema(id, name), HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to add CinemaHall.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -144,7 +148,7 @@ public class CinemaController {
     //Update CinemaHall object
     @PreAuthorize("hasAuthority('admin:update')")
     @PutMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}/seats")
-    public ResponseEntity<?> updateCinemaHallSeats(
+    public ResponseEntity<?> updateCinemaHall(
             @PathVariable Long cinemaId,
             @PathVariable Long cinemaHallId,
             @RequestParam(name = "New_Name") String name,

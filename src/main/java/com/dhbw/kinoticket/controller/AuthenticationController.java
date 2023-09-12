@@ -4,10 +4,12 @@ import com.dhbw.kinoticket.request.AuthenticationRequest;
 import com.dhbw.kinoticket.response.AuthenticationResponse;
 import com.dhbw.kinoticket.service.AuthenticationService;
 import com.dhbw.kinoticket.request.RegisterRequest;
+import com.dhbw.kinoticket.service.LogoutService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +22,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
+    private final LogoutService logoutService;
 
     //Controller endpoints for Authentication
     @PostMapping("/register")
@@ -33,5 +36,9 @@ public class AuthenticationController {
     @PostMapping("/refresh-token")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         authenticationService.refreshToken(request, response);
+    }
+    @PostMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException{
+        logoutService.logout(request, response, (Authentication) request.getUserPrincipal());
     }
 }

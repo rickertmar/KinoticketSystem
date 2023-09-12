@@ -10,6 +10,7 @@ import com.dhbw.kinoticket.request.AuthenticationRequest;
 import com.dhbw.kinoticket.request.RegisterRequest;
 import com.dhbw.kinoticket.response.AuthenticationResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.jdi.event.AccessWatchpointEvent;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
 
 
 @Service
@@ -42,7 +46,9 @@ public class AuthenticationService {
                 .role(Role.USER)
                 .build();
         var savedUser = userRepository.save(user); //saving into database
-        var jwtToken = jwtService.generateToken(user);
+        Map<String, Object> userClaims = new TreeMap<String, Object>();
+        userClaims.put("ROLE", user.getRole());
+        var jwtToken = jwtService.generateToken(userClaims, user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserToken(user);
         saveUserToken(savedUser, jwtToken);
@@ -52,7 +58,9 @@ public class AuthenticationService {
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())); //auth of email and password
         var user =  userRepository.findByEmail(request.getEmail()).orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
+        Map<String, Object> userClaims = new TreeMap<String, Object>();
+        userClaims.put("ROLE", user.getRole());
+        var jwtToken = jwtService.generateToken(userClaims, user);
         var refreshToken = jwtService.generateRefreshToken(user);
         revokeAllUserToken(user);
         saveUserToken(user, jwtToken);
@@ -84,13 +92,16 @@ public class AuthenticationService {
         final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String refreshToken;
         final String userEmail;
+
         if(authHeader!= null && authHeader.startsWith("Bearer ")) {
             refreshToken = authHeader.substring(7);
             userEmail = jwtService.extractUsername(refreshToken);
             if(userEmail != null) {
                 var user = this.userRepository.findByEmail(userEmail).orElseThrow();
+                Map<String, Object> userClaims = new TreeMap<String, Object>();
+                userClaims.put("ROLE", user.getRole());
                 if(jwtService.isTokenValid(refreshToken, user)){
-                    var accessToken = jwtService.generateToken(user);
+                    var accessToken = jwtService.generateToken(userClaims, user);
                     revokeAllUserToken(user);
                     saveUserToken(user, accessToken);
                     var authResponse = AuthenticationResponse.builder()

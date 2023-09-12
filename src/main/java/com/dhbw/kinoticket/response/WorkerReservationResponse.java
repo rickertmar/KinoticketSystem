@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.response;
 
+import com.dhbw.kinoticket.entity.Ticket;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +28,8 @@ public class WorkerReservationResponse {
     @JsonProperty("movie_name")
     private String movieName;
     @JsonProperty("tickets")
-    private List<UserTicketResponse> tickets;
+    private List<Ticket> tickets;
+    //private List<UserTicketResponse> tickets;
 
 }
 

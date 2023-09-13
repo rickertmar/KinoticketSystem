@@ -44,7 +44,8 @@ public class MovieServiceTest {
                 "120 minutes",
                 "Country 1",
                 "image1.jpg",
-                "Actor 1"
+                "Actor 1",
+                null
         );
 
         movie2 = new Movie(
@@ -59,7 +60,8 @@ public class MovieServiceTest {
                 "110 minutes",
                 "Country 2",
                 "image2.jpg",
-                "Actor 2"
+                "Actor 2",
+                null
         );
         allMovies = Arrays.asList(movie1, movie2);
     }

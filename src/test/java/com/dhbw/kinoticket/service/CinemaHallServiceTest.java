@@ -91,7 +91,7 @@ public class CinemaHallServiceTest {
         // Arrange
         Long cinemaId = 1L;
         String name = "CinemaHall 1";
-        Cinema cinema = new Cinema(cinemaId, "Test cinema 1", new LocationAddress(1L, "Test street 1", "Test city 1", "Test country 1", "11111"), new ArrayList<>());
+        Cinema cinema = new Cinema(cinemaId, "Test cinema 1", new LocationAddress(1L, "Test street 1", "Test city 1", "Test country 1", "11111"), new ArrayList<>(), null);
         CinemaHall cinemaHall = new CinemaHall(1L, name, null, null);
 
         // Mock behavior for getCinemaById
@@ -184,7 +184,7 @@ public class CinemaHallServiceTest {
 
         // Create a valid CinemaHall object with a valid Cinema association
         CinemaHall cinemaHall = new CinemaHall(cinemaHallId, "CinemaHall 1", null, null);
-        Cinema cinema = new Cinema(1L, "Test cinema 1", null, new ArrayList<>());
+        Cinema cinema = new Cinema(1L, "Test cinema 1", null, new ArrayList<>(), null);
         cinema.getCinemaHallList().add(cinemaHall);
 
         // Mock behavior to return the CinemaHall with a valid Cinema

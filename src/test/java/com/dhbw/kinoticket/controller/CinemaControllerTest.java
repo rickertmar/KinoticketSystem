@@ -8,6 +8,7 @@ import com.dhbw.kinoticket.request.CreateCinemaRequest;
 import com.dhbw.kinoticket.request.CreateSeatRequest;
 import com.dhbw.kinoticket.service.CinemaHallService;
 import com.dhbw.kinoticket.service.CinemaService;
+import com.dhbw.kinoticket.service.MovieService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
@@ -46,6 +47,8 @@ class CinemaControllerTest {
     private CinemaService cinemaService;
     @Mock
     private CinemaHallService cinemaHallService;
+    @Mock
+    private MovieService movieService;
 
     List<Cinema> cinemaList;
     Cinema cinema;
@@ -64,8 +67,8 @@ class CinemaControllerTest {
     void test_GetAllCinemas_ShouldReturnAllCinemas() throws Exception {
         // Arrange
         cinemaList = new ArrayList<>();
-        cinemaList.add(new Cinema(1L, "Test cinema 1", null, null));
-        cinemaList.add(new Cinema(2L, "Test cinema 2", null, null));
+        cinemaList.add(new Cinema(1L, "Test cinema 1", null, null, null));
+        cinemaList.add(new Cinema(2L, "Test cinema 2", null, null, null));
 
         // Mock
         when(cinemaService.getAllCinemas()).thenReturn(cinemaList);
@@ -80,7 +83,7 @@ class CinemaControllerTest {
     @Order(2)
     void test_GetCinemaById_ShouldReturnCinemaById() throws Exception {
         // Arrange
-        cinema = new Cinema(1L, "Test cinema 1", null, null);
+        cinema = new Cinema(1L, "Test cinema 1", null, null, null);
         Long cinemaId = 1L;
 
         // Mock
@@ -98,7 +101,7 @@ class CinemaControllerTest {
     @Order(3)
     void test_CreateCinema_ShouldCreateCinema() throws Exception {
         // Arrange
-        cinema = new Cinema(1L, "Test cinema 1", new LocationAddress(1L, "Test street", "Test city", "Test country", "12345"), null);
+        cinema = new Cinema(1L, "Test cinema 1", new LocationAddress(1L, "Test street", "Test city", "Test country", "12345"), null, null);
         CreateCinemaRequest request = new CreateCinemaRequest("Test cinema 1", "Test street", "Test city", "Test country", "12345");
 
         // Mock
@@ -121,7 +124,7 @@ class CinemaControllerTest {
     void test_UpdateCinema_ShouldUpdateCinemaById() throws Exception {
         // Arrange
         Long id = 1L;
-        cinema = new Cinema(id, "Test cinema 1", new LocationAddress(1L, "Test street", "Test city", "Test country", "12345"), null);
+        cinema = new Cinema(id, "Test cinema 1", new LocationAddress(1L, "Test street", "Test city", "Test country", "12345"), null, null);
         CreateCinemaRequest request = new CreateCinemaRequest("Test cinema 1", "Test street", "Test city", "Test country", "12345");
 
         // Mock
@@ -161,7 +164,7 @@ class CinemaControllerTest {
         // Arrange
         Long id = 1L;
         LocationAddress locationAddress = new LocationAddress(1L, "Test street", "Test city", "Test country", "12345");
-        cinema = new Cinema(id, "Test cinema 1", locationAddress, null);
+        cinema = new Cinema(id, "Test cinema 1", locationAddress, null, null);
 
         // Mock
         when(cinemaService.updateLocationAddress(id, locationAddress)).thenReturn(cinema);
@@ -179,12 +182,15 @@ class CinemaControllerTest {
                 .andDo(print());
     }
 
+    // ----------------------------------------------------------------
+    // CinemaHall Testing Methods
+    // ----------------------------------------------------------------
     @Test
     @Order(7)
     void test_getCinemaHall_ShouldReturnCinemaHallById() throws Exception {
         // Arrange
         cinemaHall = new CinemaHall(1L, "Test cinemahall", null, null);
-        Long cinemaId = 1l;
+        Long cinemaId = 1L;
         Long cinemaHallId = 1L;
 
         // Mock
@@ -292,4 +298,9 @@ class CinemaControllerTest {
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+
+
+    // ----------------------------------------------------------------
+    // Movie Testing Methods
+    // ----------------------------------------------------------------
 }

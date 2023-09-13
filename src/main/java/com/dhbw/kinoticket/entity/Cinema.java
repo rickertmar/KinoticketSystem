@@ -23,7 +23,9 @@ public class Cinema {
     @JoinColumn(name="location_id", referencedColumnName = "id")
     private LocationAddress locationAddress;
 
-
     @OneToMany(mappedBy = "cinema", cascade = CascadeType.ALL)
     private List<CinemaHall> cinemaHallList = new ArrayList<>(); //ensure that the list is never null
+
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Movie> movieList = new ArrayList<>(); //ensure that the list is never null
 }

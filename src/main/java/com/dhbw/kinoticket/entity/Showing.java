@@ -17,18 +17,26 @@ public class Showing {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="movie_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="movie_id")
     private Movie movie;
 
     private LocalDateTime time;
-
-    private int cinemaHall;
+    private String showingExtras;
 
     @ManyToMany
-    Set<Seat> freeSeats;
+    @JoinTable(
+            name = "showing_free_seats",
+            joinColumns = @JoinColumn(name = "showing_id"),
+            inverseJoinColumns = @JoinColumn(name = "seat_id")
+    )
+    private Set<Seat> freeSeats;
+
     @ManyToMany
-    Set<Seat> blockedSeats;
-
-
+    @JoinTable(
+            name = "showing_blocked_seats",
+            joinColumns = @JoinColumn(name = "showing_id"),
+            inverseJoinColumns = @JoinColumn(name = "seat_id")
+    )
+    private Set<Seat> blockedSeats;
 }

@@ -1,29 +1,29 @@
 package com.dhbw.kinoticket.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity(name = "Ticket")
-@Getter
-@Setter
 public class Ticket {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ManyToOne(cascade = CascadeType.ALL)
+
+    @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name="showing_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Showing showing;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.DETACH)
     @JoinColumn(name="seat_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Seat seat;
 
-    @Column(name = "price")
     private int price;
-    @Column (name = "isDiscounted")
     private boolean isDiscounted;
-    @Column(name = "isBooked")
     private boolean isBooked;
 
     @ManyToOne

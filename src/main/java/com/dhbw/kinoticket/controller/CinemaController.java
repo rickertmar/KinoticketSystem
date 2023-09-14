@@ -3,6 +3,7 @@ package com.dhbw.kinoticket.controller;
 import com.dhbw.kinoticket.entity.Cinema;
 import com.dhbw.kinoticket.entity.CinemaHall;
 import com.dhbw.kinoticket.entity.LocationAddress;
+import com.dhbw.kinoticket.entity.Movie;
 import com.dhbw.kinoticket.request.CreateCinemaRequest;
 import com.dhbw.kinoticket.request.CreateSeatRequest;
 import com.dhbw.kinoticket.service.CinemaHallService;
@@ -31,7 +32,7 @@ public class CinemaController {
     public ResponseEntity<List<Cinema>> getAllCinemas() {
         try {
             List<Cinema> cinemas = cinemaService.getAllCinemas();
-            return new ResponseEntity<List<Cinema>>(cinemas, HttpStatus.FOUND);
+            return new ResponseEntity<>(cinemas, HttpStatus.FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -199,6 +200,28 @@ public class CinemaController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    // Create movie entity and add it to the cinema
+    @PostMapping(value = "/{cinemaId}/movies")
+    public ResponseEntity<?> addMovieToCinema(@PathVariable Long cinemaId,
+                                              @RequestBody Movie movie) {
+        try {
+            return new ResponseEntity<>(movieService.addMovieToCinema(cinemaId, movie), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+    }
+
+    // Delete movie by id and remove from associated cinema
+    @DeleteMapping(value = "/{cinemaId}/movies/{movieId}")
+    public ResponseEntity<?> removeMovieById(@PathVariable Long movieId) {
+        try {
+            movieService.removeMovie(movieId);
+            return new ResponseEntity<>("Movie deleted.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+    }
 }
 
 /*
@@ -235,5 +258,20 @@ Add Seats to CinemaHall
         "blocked": false
     }
 ]
+
+Add movie
+{
+    "title": "Movie 1",
+    "fsk": "FSK12",
+    "description": "Description 1",
+    "releaseYear": 2021,
+    "genres": "Genre 1",
+    "director": "Director 1",
+    "runningWeek": 1,
+    "runtime": "120 minutes",
+    "releaseCountry": "Country 1",
+    "imageSrc": "image1.jpg",
+    "actors": "Actor 1"
+}
 
  */

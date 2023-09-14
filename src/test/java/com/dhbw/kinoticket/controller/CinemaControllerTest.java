@@ -1,9 +1,6 @@
 package com.dhbw.kinoticket.controller;
 
-import com.dhbw.kinoticket.entity.Cinema;
-import com.dhbw.kinoticket.entity.CinemaHall;
-import com.dhbw.kinoticket.entity.LocationAddress;
-import com.dhbw.kinoticket.entity.Seat;
+import com.dhbw.kinoticket.entity.*;
 import com.dhbw.kinoticket.request.CreateCinemaRequest;
 import com.dhbw.kinoticket.request.CreateSeatRequest;
 import com.dhbw.kinoticket.service.CinemaHallService;
@@ -24,21 +21,21 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @ComponentScan(basePackages = "com.dhbw.kinoticket")
 @AutoConfigureMockMvc
 @ContextConfiguration
 @SpringBootTest(classes = {CinemaControllerTest.class})
-class CinemaControllerTest {
+public class CinemaControllerTest {
 
     @Autowired
     MockMvc mockMvc;
@@ -303,4 +300,83 @@ class CinemaControllerTest {
     // ----------------------------------------------------------------
     // Movie Testing Methods
     // ----------------------------------------------------------------
+    @Test
+    @Order(12)
+    public void test_GetAllMovies_ShouldReturnAllMovies() throws Exception {
+        // Arrange
+        List<Movie> movies = Arrays.asList(
+                new Movie(1L, "Movie 1", FSK.FSK12, "Description 1", 2021, "Genre 1", "Director 1", 1, "120 minutes", "Country 1", "image1.jpg", "Actor 1", null),
+                new Movie(2L, "Movie 2", FSK.FSK16, "Description 2", 2022, "Genre 2", "Director 2", 2, "110 minutes", "Country 2", "image2.jpg", "Actor 2", null)
+        );
+
+        // Mock
+        when(movieService.getAllMovies()).thenReturn(movies);
+
+        // Act and Assert
+        mockMvc.perform(get("/cinemas/{cinemaId}/movies", 1L))
+                .andExpect(status().isFound())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].title").value("Movie 1"))
+                .andExpect(jsonPath("$[1].id").value(2))
+                .andExpect(jsonPath("$[1].title").value("Movie 2"))
+                .andDo(print());
+    }
+
+    @Test
+    @Order(13)
+    public void test_GetMovieById_ShouldReturnMovieById() throws Exception {
+        // Arrange
+        Movie movie = new Movie(1L, "Movie 1", FSK.FSK12, "Description 1", 2021, "Genre 1", "Director 1", 1, "120 minutes", "Country 1", "image1.jpg", "Actor 1", null);
+
+        // Mock
+        when(movieService.getMovieById(1L)).thenReturn(movie);
+
+        // Act and Assert
+        mockMvc.perform(get("/cinemas/{cinemaId}/movies/{id}", 1L, 1L))
+                .andExpect(status().isFound())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("Movie 1"))
+                .andDo(print());
+    }
+
+    @Test
+    @Order(14)
+    public void test_AddMovieToCinema_ShouldCreateMovieAndAddToCinema() throws Exception {
+        // Arrange
+        Movie movie = new Movie(1L, "Movie 1", FSK.FSK12, "Description 1", 2021, "Genre 1", "Director 1", 1, "120 minutes", "Country 1", "image1.jpg", "Actor 1", null);
+
+        // Mock
+        when(movieService.addMovieToCinema(1L, movie)).thenReturn(movie);
+
+        // Act and Assert
+        mockMvc.perform(post("/cinemas/{cinemaId}/movies", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(asJsonString(movie)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(1))
+                .andExpect(jsonPath("$.title").value("Movie 1"))
+                .andDo(print());
+    }
+
+    // Helper method to convert object to JSON string
+    private static String asJsonString(final Object obj) {
+        try {
+            return new ObjectMapper().writeValueAsString(obj);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    @Order(15)
+    public void test_RemoveMovieById_ShouldDeleteAndRemoveMovie() throws Exception {
+        // Act and Assert
+        mockMvc.perform(delete("/cinemas/{cinemaId}/movies/{movieId}", 1L, 1L))
+                .andExpect(status().isOk())
+                .andExpect(content().string("Movie deleted."));
+
+        // Verify that the movieService.removeMovie() method was called with the correct movieId
+        verify(movieService, times(1)).removeMovie(1L);
+    }
 }

@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -24,7 +25,7 @@ public class Showing {
     private LocalDateTime time;
     private String showingExtras;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "showing_free_seats",
             joinColumns = @JoinColumn(name = "showing_id"),
@@ -32,11 +33,16 @@ public class Showing {
     )
     private Set<Seat> freeSeats;
 
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(
             name = "showing_blocked_seats",
             joinColumns = @JoinColumn(name = "showing_id"),
             inverseJoinColumns = @JoinColumn(name = "seat_id")
     )
     private Set<Seat> blockedSeats;
+
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cinema_hall_id")
+    private CinemaHall cinemaHall;
 }

@@ -22,7 +22,7 @@ public class Ticket {
     @JoinColumn(name="seat_id", referencedColumnName = "id", insertable = false, updatable = false)
     private Seat seat;
 
-    private int price;
+    private double price;
     private boolean isDiscounted;
     private boolean isBooked;
 

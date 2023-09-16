@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.service;
 
+import ch.qos.logback.core.encoder.EchoEncoder;
 import com.dhbw.kinoticket.entity.Cinema;
 import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.repository.CinemaRepository;
@@ -64,19 +65,21 @@ public class CinemaService {
     //Update existing Cinema
     public Cinema updateCinema(Long id,
                                @Valid CreateCinemaRequest createCinemaRequest) {
-        Cinema existingCinema = getCinemaById(id);
-        if (existingCinema == null) {
+        try{
+            Cinema existingCinema = getCinemaById(id);
+            existingCinema.setName(createCinemaRequest.getName());
+
+            existingCinema.getLocationAddress().setStreet(createCinemaRequest.getStreet());
+            existingCinema.getLocationAddress().setCity(createCinemaRequest.getCity());
+            existingCinema.getLocationAddress().setCountry(createCinemaRequest.getCountry());
+            existingCinema.getLocationAddress().setPostcode(createCinemaRequest.getPostcode());
+
+            cinemaRepository.save(existingCinema);
+            return existingCinema;
+        }catch (Exception e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CINEMA_NOT_FOUND");
         }
-        existingCinema.setName(createCinemaRequest.getName());
 
-        existingCinema.getLocationAddress().setStreet(createCinemaRequest.getStreet());
-        existingCinema.getLocationAddress().setCity(createCinemaRequest.getCity());
-        existingCinema.getLocationAddress().setCountry(createCinemaRequest.getCountry());
-        existingCinema.getLocationAddress().setPostcode(createCinemaRequest.getPostcode());
-
-        cinemaRepository.save(existingCinema);
-        return existingCinema;
     }
 
     //Delete Cinema by id
@@ -97,14 +100,16 @@ public class CinemaService {
     @Transactional
     public Cinema updateLocationAddress(Long id,
                                         @Valid LocationAddress locationAddress) {
-        Cinema cinema = getCinemaById(id);
-        if (cinema == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cinema not found");
-        }
-        Long oldLocationId = cinema.getLocationAddress().getId();
-        locationAddressRepository.deleteById(oldLocationId);
-        cinema.setLocationAddress(locationAddress);
+        try{
+            Cinema cinema = getCinemaById(id);
+            Long oldLocationId = cinema.getLocationAddress().getId();
+            locationAddressRepository.deleteById(oldLocationId);
+            cinema.setLocationAddress(locationAddress);
 
-        return cinemaRepository.save(cinema);
+            return cinemaRepository.save(cinema);
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CINEMA_NOT_FOUND");
+        }
+
     }
 }

@@ -52,14 +52,15 @@ public class CinemaHallService {
     //Add seats to CinemaHall
     public CinemaHall addSeatsToCinemaHall(Long id,
                                            List<CreateSeatRequest> createSeatRequests) {
-        CinemaHall cinemaHall = getCinemaHallById(id);
-        if (cinemaHall == null) {
+        try{
+            CinemaHall cinemaHall = getCinemaHallById(id);
+            List<Seat> seats = convertSeatDTOsToSeats(createSeatRequests, cinemaHall);
+            cinemaHall.getSeats().addAll(seats);
+            cinemaHallRepository.save(cinemaHall);
+            return cinemaHall;
+        }catch(Exception e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cinema hall not found");
         }
-        List<Seat> seats = convertSeatDTOsToSeats(createSeatRequests, cinemaHall);
-        cinemaHall.getSeats().addAll(seats);
-        cinemaHallRepository.save(cinemaHall);
-        return cinemaHall;
     }
 
     //Update CinemaHall object

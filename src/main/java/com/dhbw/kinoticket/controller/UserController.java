@@ -58,7 +58,7 @@ public class UserController {
             userService.deleteUser(userService.getUserById(id));
             return new ResponseEntity<>("User deleted.", HttpStatus.OK);
         } catch (Exception e) {
-            return new ResponseEntity<>("Failed to delete Cinema.", HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>("Failed to delete User.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
     @PreAuthorize("hasAuthority('admin:delete')")

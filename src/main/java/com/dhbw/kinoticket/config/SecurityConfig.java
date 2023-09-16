@@ -61,7 +61,7 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/auth/logout")
                         .addLogoutHandler(logoutHandler)
-                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(302))
+                        .logoutSuccessHandler((request, response, authentication) -> response.setStatus(200))
                 )
                 .build();
     }

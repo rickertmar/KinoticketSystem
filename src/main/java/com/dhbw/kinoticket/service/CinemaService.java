@@ -21,9 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CinemaService {
 
-    @Autowired
     private final CinemaRepository cinemaRepository;
-    @Autowired
     private final LocationAddressRepository locationAddressRepository;
 
     //Get all cinemas
@@ -31,16 +29,10 @@ public class CinemaService {
         return cinemaRepository.findAll();
     }
 
+
     //Find existing Cinema by id
     public Cinema getCinemaById(Long id) {
-        List<Cinema> cinemas = cinemaRepository.findAll();
-        Cinema cinema = null;
-        for (Cinema cinemaRecord:cinemas) {
-            if (cinemaRecord.getId() == id) {
-                cinema = cinemaRecord;
-            }
-        }
-        return cinema;
+        return cinemaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Cinema not found with ID: " + id));
     }
 
     //Create new Cinema
@@ -90,7 +82,7 @@ public class CinemaService {
     //Delete Cinema by id
     public void deleteCinema(Long id) {
         try {
-            Cinema cinema = cinemaRepository.findById(id).get();
+            Cinema cinema = getCinemaById(id);
             cinemaRepository.delete(cinema);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting");

@@ -23,26 +23,15 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CinemaHallService {
 
-    @Autowired
     private final SeatRepository seatRepository;
-    @Autowired
     private final CinemaHallRepository cinemaHallRepository;
-    @Autowired
     private final CinemaRepository cinemaRepository;
-    @Autowired
     private final CinemaService cinemaService;
 
 
     //Get CinemaHall by id
     public CinemaHall getCinemaHallById(Long id) {
-        List<CinemaHall> cinemaHalls = cinemaHallRepository.findAll();
-        CinemaHall cinemaHall = null;
-        for (CinemaHall cinemaHallRecord:cinemaHalls) {
-            if (cinemaHallRecord.getId() == id) {
-                cinemaHall = cinemaHallRecord;
-            }
-        }
-        return cinemaHall;
+        return cinemaHallRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("CinemaHall not found with ID: " + id));
     }
 
     //Create CinemaHall and add to Cinema
@@ -79,20 +68,13 @@ public class CinemaHallService {
                                               String name,
                                               List<CreateSeatRequest> createSeatRequests) {
         CinemaHall cinemaHall = getCinemaHallById(id);
-        if (cinemaHall == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cinema hall not found");
-        }
         List<Seat> oldSeatList = cinemaHall.getSeats();
         cinemaHall.setSeats(null);
         List<Seat> newSeats = convertSeatDTOsToSeats(createSeatRequests, cinemaHall);
         cinemaHall.setName(name);
         cinemaHall.setSeats(newSeats);
         cinemaHallRepository.save(cinemaHall);
-
-        for (Seat oldSeat : oldSeatList) {
-            seatRepository.delete(oldSeat);
-        }
-
+        seatRepository.deleteAll(oldSeatList);
         return cinemaHall;
     }
 

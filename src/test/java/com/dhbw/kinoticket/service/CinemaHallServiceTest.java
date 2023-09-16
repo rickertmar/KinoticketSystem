@@ -54,18 +54,15 @@ public class CinemaHallServiceTest {
         // Arrange
         Long cinemaHallId = 1L;
         String cinemaHallName = "Name 1";
-        List<CinemaHall> myCinemaHalls = new ArrayList<>();
-        myCinemaHalls.add(new CinemaHall(1L, "Name 1", null, null));
-        myCinemaHalls.add(new CinemaHall(2L, "Name 2", null, null));
-        myCinemaHalls.add(new CinemaHall(3L, "Name 3", null, null));
+        CinemaHall cinemaHall = new CinemaHall(cinemaHallId, cinemaHallName, null, null);
 
-// Mock
-        when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.of(myCinemaHalls.get(0)));
+        // Mock
+        when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.of(cinemaHall));
 
-// Act
+        // Act
         CinemaHall actualCinemaHall = cinemaHallService.getCinemaHallById(cinemaHallId);
 
-// Assert
+        // Assert
         assertEquals(cinemaHallId, actualCinemaHall.getId());
         assertEquals(cinemaHallName, actualCinemaHall.getName());
 

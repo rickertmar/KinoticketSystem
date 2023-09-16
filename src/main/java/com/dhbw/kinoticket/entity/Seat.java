@@ -25,7 +25,7 @@ public class Seat {
     private boolean isBlocked;
 
     @JsonIgnore
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hall_id")
     private CinemaHall cinemaHall;
 }

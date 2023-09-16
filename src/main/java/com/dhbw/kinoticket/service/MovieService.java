@@ -46,7 +46,6 @@ public class MovieService {
             throw new IllegalArgumentException("Invalid or missing movie data");
         }
         movie.setCinema(cinema);
-        movieRepository.save(movie);
         cinema.getMovieList().add(movie);
         cinemaRepository.save(cinema);
         return movie;

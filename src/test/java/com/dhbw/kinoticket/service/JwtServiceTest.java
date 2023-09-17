@@ -1,9 +1,11 @@
 package com.dhbw.kinoticket.service;
 
+import com.dhbw.kinoticket.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -19,14 +21,18 @@ import static org.mockito.Mockito.when;
 @SpringBootTest(classes = {JwtServiceTest.class})
 public class JwtServiceTest {
 
-    private JwtService jwtService;
+    @Mock
+    private TokenRepository tokenRepository;
 
     @Mock
     private UserDetails userDetails;
 
+    @InjectMocks
+    private JwtService jwtService;
+
     @BeforeEach
     public void setUp() {
-        jwtService = new JwtService();
+        jwtService = new JwtService(tokenRepository);
         when(userDetails.getUsername()).thenReturn("testUser");
     }
 

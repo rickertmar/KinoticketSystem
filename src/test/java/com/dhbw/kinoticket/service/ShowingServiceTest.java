@@ -44,25 +44,9 @@ public class ShowingServiceTest {
 
     @BeforeEach
     void setUp() {
-        showing1 = new Showing(
-                1L,
-                null,
-                null,
-                "3D",
-                null,
-                null,
-                null
-        );
+        showing1 = new Showing(1L, 12.70, null, null, "3D", null, null, null);
 
-        showing2 = new Showing(
-                2L,
-                null,
-                null,
-                "2D",
-                null,
-                null,
-                null
-        );
+        showing2 = new Showing(2L, 9.70, null, null, "2D", null, null, null);
 
         allShowings = Arrays.asList(showing1, showing2);
     }

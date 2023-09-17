@@ -20,12 +20,18 @@ public class ReservationServiceTest {
     @Mock
     private ReservationRepository reservationRepository;
 
+    @Mock
+    private ShowingService showingService;
+
+    @Mock
+    private TicketService ticketService;
+
     @InjectMocks
     private ReservationService reservationService;
 
     @BeforeEach
     void setUp() {
-        reservationService = new ReservationService(reservationRepository);
+        reservationService = new ReservationService(reservationRepository, showingService, ticketService);
     }
 
     @Test
@@ -89,7 +95,7 @@ public class ReservationServiceTest {
         Reservation reservation = new Reservation();
         reservation.setId(1L);
         reservation.setTotal(100.0);
-        reservation.setPayed(true);
+        reservation.setPaid(true);
 
         // Act
         var result = reservationService.convertToWorkerResponse(reservation);

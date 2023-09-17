@@ -22,7 +22,6 @@ public class Refund {
     private LocalDateTime refundDate;
     @Column(name = "reason")
     private String reason;
-
-    @OneToMany(mappedBy = "refund", cascade = CascadeType.ALL) // relation to tickets
-    private List<Ticket> refundTickets;
+    @OneToOne
+    private Reservation reservation;
 }

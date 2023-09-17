@@ -1,16 +1,13 @@
 package com.dhbw.kinoticket.controller;
 
-import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.entity.User;
-import com.dhbw.kinoticket.repository.LocationAddressRepository;
-import com.dhbw.kinoticket.repository.TokenRepository;
-import com.dhbw.kinoticket.repository.UserRepository;
 import com.dhbw.kinoticket.request.CreateLocationRequest;
 import com.dhbw.kinoticket.request.UpdateUserRequest;
-import com.dhbw.kinoticket.response.LocationResponse;
 import com.dhbw.kinoticket.response.UserResponse;
+import com.dhbw.kinoticket.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,165 +19,138 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping(value = "/users")
 public class UserController {
-    private final UserRepository userRepository;
-    private final LocationAddressRepository locationAddressRepository;
-    private final TokenRepository tokenRepository;
+    private final UserService userService;
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/id/{id}")
-    public User getUserById(@PathVariable("id") Long id) {
-        return userRepository.findById(id).orElse(null);
+    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+        try {
+            User user = userService.getUserById(id);
+            return new ResponseEntity<>(user, HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/email/{email}")
-    public User getUserByEmail(@PathVariable("email") String email) {
-        return userRepository.findByEmail(email).orElse(null);
+    public ResponseEntity<User> getUserByEmail(@PathVariable("email") String email) {
+        try {
+            User user = userService.getUserByEmail(email);
+            return new ResponseEntity<>(user, HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/all")
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    public ResponseEntity<List<User>> getAllUsers() {
+        try {
+            List<User> users = userService.getAllUsers();
+            return new ResponseEntity<>(users, HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
     @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping(value = "/id/{id}")
-    public void deleteUserById(@PathVariable("id") Long id) {
-        User user = userRepository.findById(id).get();
-        userRepository.delete(user);
+    public ResponseEntity<?>deleteUserById(@PathVariable("id") Long id) {
+        try {
+            userService.deleteUser(userService.getUserById(id));
+            return new ResponseEntity<>("User deleted.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to delete User.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping(value = "/email/{email}")
-    public void deleteUserByEmail(@PathVariable("email") String email) {
-        userRepository.deleteById(userRepository.findByEmail(email).orElseThrow().getId());
+    public ResponseEntity<?> deleteUserByEmail(@PathVariable("email") String email) {
+        try {
+            userService.deleteUser(userService.getUserByEmail(email));
+            return new ResponseEntity<>("User deleted.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to delete User.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @GetMapping(value = "")
     public ResponseEntity<UserResponse> getSelf(HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
-        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
-        var userResponse = UserResponse.builder()
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .billing(user.getBillingLocation())
-                .shipping(user.getShippingLocation())
-                .build();
-        return ResponseEntity.ok(userResponse);
+        return ResponseEntity.ok(userService.userResponseBuilder(userService.getUserByEmail(principal.getName())));
     }
     @DeleteMapping(value = "")
-    public void deleteSelf(HttpServletRequest httpServletRequest) {
+    public ResponseEntity<?> deleteSelf(HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
-        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
-
-        userRepository.delete(user); //and associated tokens with its foreign keys -> cascade option in token entity
+        try {
+            userService.deleteUser(userService.getUserByEmail(principal.getName()));
+            return new ResponseEntity<>("User deleted.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to delete User.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @PutMapping(value = "")
-    public ResponseEntity<UserResponse> updateSelf(@RequestBody UpdateUserRequest updateUserRequest, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<?> updateSelf(@RequestBody UpdateUserRequest updateUserRequest, HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
-        User user = userRepository.findByEmail(principal.getName()).orElseThrow();
-        user.setFirstName(updateUserRequest.getFirstName());
-        user.setLastName(updateUserRequest.getLastName());
-        userRepository.save(user);
-        var userResponse = UserResponse.builder()
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .billing(user.getBillingLocation())
-                .shipping(user.getShippingLocation())
-                .build();
-        return ResponseEntity.ok(userResponse);
+        try {
+            return new ResponseEntity<>(userService.updateUser(updateUserRequest, userService.getUserByEmail(principal.getName())), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to update User", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
+
     @PostMapping(value = "/shipping")
-    public ResponseEntity<LocationResponse> addShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
-        var locationAddress = LocationAddress
-                .builder()
-                .street(createLocationRequest.getStreet())
-                .city(createLocationRequest.getCity())
-                .country(createLocationRequest.getCountry())
-                .postcode(createLocationRequest.getPostcode())
-                .build();
-        var location = locationAddressRepository.save(locationAddress);
-        User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        user.setShippingLocation(location);
-        userRepository.save(user);
-        var locationResponse = LocationResponse.builder()
-                .street(location.getStreet())
-                .city(location.getCity())
-                .country(location.getCountry())
-                .postcode(location.getPostcode())
-                .build();
-        return ResponseEntity.ok(locationResponse);
+    public ResponseEntity<?> addShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
+        Principal principal = httpServletRequest.getUserPrincipal();
+        try {
+            return new ResponseEntity<>(userService.saveShippingLocation(createLocationRequest, userService.getUserByEmail(principal.getName())), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to save Location.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @PutMapping(value = "/shipping")
-    public ResponseEntity<LocationResponse> updateShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
-        User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        LocationAddress location = user.getShippingLocation();
-        location.setStreet(createLocationRequest.getStreet());
-        location.setCity(createLocationRequest.getCity());
-        location.setCountry(createLocationRequest.getCountry());
-        location.setPostcode(createLocationRequest.getPostcode());
-        locationAddressRepository.save(location);
-        user.setShippingLocation(location);
-        userRepository.save(user);
-        var locationResponse = LocationResponse.builder()
-                .street(location.getStreet())
-                .city(location.getCity())
-                .country(location.getCountry())
-                .postcode(location.getPostcode())
-                .build();
-        return ResponseEntity.ok(locationResponse);
+    public ResponseEntity<?> updateShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
+        Principal principal = httpServletRequest.getUserPrincipal();
+        try {
+            return new ResponseEntity<>(userService.updateShippingLocation(createLocationRequest, userService.getUserByEmail(principal.getName())), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to save Location.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @DeleteMapping(value = "/shipping")
-    public void deleteShippingAddress(HttpServletRequest httpServletRequest) {
-        User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        LocationAddress locationAddress = user.getShippingLocation();
-        locationAddressRepository.delete(locationAddress);
-        user.setShippingLocation(null);
-        userRepository.save(user);
+    public ResponseEntity<?> deleteShippingAddress(HttpServletRequest httpServletRequest) {
+        Principal principal = httpServletRequest.getUserPrincipal();
+        try {
+            userService.deleteShippingLocation(userService.getUserByEmail(principal.getName()));
+            return new ResponseEntity<>("Successfully deleted Location", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to delete Location.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @PostMapping(value = "/billing")
-    public ResponseEntity<LocationResponse> addBillingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
-        var locationAddress = LocationAddress
-                .builder()
-                .street(createLocationRequest.getStreet())
-                .city(createLocationRequest.getCity())
-                .country(createLocationRequest.getCountry())
-                .postcode(createLocationRequest.getPostcode())
-                .build();
-        var location = locationAddressRepository.save(locationAddress);
-        User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        user.setBillingLocation(location);
-        userRepository.save(user);
-        var locationResponse = LocationResponse.builder()
-                .street(location.getStreet())
-                .city(location.getCity())
-                .country(location.getCountry())
-                .postcode(location.getPostcode())
-                .build();
-        return ResponseEntity.ok(locationResponse);
+    public ResponseEntity<?> addBillingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
+        Principal principal = httpServletRequest.getUserPrincipal();
+        try {
+            return new ResponseEntity<>(userService.saveBillingLocation(createLocationRequest, userService.getUserByEmail(principal.getName())), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to save Location.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @PutMapping(value = "/billing")
-    public ResponseEntity<LocationResponse> updateBillingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
-        User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        LocationAddress location = user.getBillingLocation();
-        location.setStreet(createLocationRequest.getStreet());
-        location.setCity(createLocationRequest.getCity());
-        location.setCountry(createLocationRequest.getCountry());
-        location.setPostcode(createLocationRequest.getPostcode());
-        locationAddressRepository.save(location);
-        user.setBillingLocation(location);
-        userRepository.save(user);
-        var locationResponse = LocationResponse.builder()
-                .street(location.getStreet())
-                .city(location.getCity())
-                .country(location.getCountry())
-                .postcode(location.getPostcode())
-                .build();
-        return ResponseEntity.ok(locationResponse);
+    public ResponseEntity<?> updateBillingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
+        Principal principal = httpServletRequest.getUserPrincipal();
+        try {
+            return new ResponseEntity<>(userService.updateBillingLocation(createLocationRequest, userService.getUserByEmail(principal.getName())), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to save Location.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
     @DeleteMapping(value = "/billing")
-    public void deleteBillingAddress(HttpServletRequest httpServletRequest) {
-        User user = userRepository.findByEmail(httpServletRequest.getUserPrincipal().getName()).orElseThrow();
-        user.setBillingLocation(null);
-        userRepository.save(user);
+    public ResponseEntity<?> deleteBillingAddress(HttpServletRequest httpServletRequest) {
+        Principal principal = httpServletRequest.getUserPrincipal();
+        try {
+            userService.deleteBillingLocation(userService.getUserByEmail(principal.getName()));
+            return new ResponseEntity<>("Successfully deleted Location", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to delete Location.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }

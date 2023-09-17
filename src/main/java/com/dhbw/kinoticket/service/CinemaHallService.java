@@ -111,4 +111,9 @@ public class CinemaHallService {
         }
         return seats;
     }
+
+    // Test if CinemaHall exists
+    public boolean doesCinemaHallExist(Long cinemaHallId) {
+        return cinemaRepository.existsById(cinemaHallId);
+    }
 }

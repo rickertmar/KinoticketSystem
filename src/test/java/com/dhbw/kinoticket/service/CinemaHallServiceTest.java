@@ -8,9 +8,7 @@ import com.dhbw.kinoticket.repository.CinemaHallRepository;
 import com.dhbw.kinoticket.repository.CinemaRepository;
 import com.dhbw.kinoticket.repository.SeatRepository;
 import com.dhbw.kinoticket.request.CreateSeatRequest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,6 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest(classes = {CinemaHallServiceTest.class})
 public class CinemaHallServiceTest {
 
@@ -50,6 +49,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(1)
     void test_getCinemaHallById_WhenFound_ThenReturnCinemaHall() {
         // Arrange
         Long cinemaHallId = 1L;
@@ -69,6 +69,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(2)
     void test_getCinemaHallById_WhenNotFound_ThenAssertNull() {
         // Arrange
         Long cinemaHallId = 2L;
@@ -82,6 +83,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(3)
     void test_CreateCinemaHallAndAddToCinema_WhenCalledWithValidArguments() {
         // Arrange
         Long cinemaId = 1L;
@@ -110,6 +112,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(4)
     void test_AddSeatsToCinemaHall_WhenSeatsAdded_ThenCinemaHallUpdated() {
         // Arrange
         Long cinemaHallId = 1L;
@@ -135,6 +138,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(5)
     void test_AddSeatsToCinemaHall_WhenCinemaHallDoesNotExist_ThenExceptionIsThrown() {
         // Arrange
         Long cinemaHallId = 2L;
@@ -150,6 +154,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(6)
     void test_updateSeatsOfCinemaHall_WhenCinemaExists_ThenCinemaHallUpdated() {
         // Arrange
         Long cinemaHallId = 1L;
@@ -175,6 +180,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(7)
     @Disabled
         // cinemaHall.getCinema() throws NullPointerException because it is not mocked
     void test_deleteCinemaHall_Success() {
@@ -206,6 +212,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(8)
     void test_DeleteCinemaHall_WhenCinemaHallDoesNotExist_ThenExceptionIsThrown() {
         // Arrange
         Long cinemaHallId = 2L;
@@ -216,6 +223,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(9)
     public void test_ConvertSeatDTOsToSeats_WhenGivenValidInputs_ThenReturnsCorrectSeats() {
         // Arrange
         List<CreateSeatRequest> seatDTOList = new ArrayList<>();
@@ -241,6 +249,7 @@ public class CinemaHallServiceTest {
     }
 
     @Test
+    @Order(10)
     public void test_ConvertSeatDTOsToSeats_WhenGivenEmptyList_ThenReturnsEmptySeats() {
         // Arrange
         List<CreateSeatRequest> seatDTOList = new ArrayList<>();
@@ -251,5 +260,37 @@ public class CinemaHallServiceTest {
 
         // Assert
         assertThat(seats).isEmpty();
+    }
+
+    @Test
+    @Order(11)
+    void test_DoesCinemaHallExist_WhenExistsThenTrue() {
+        // Arrange
+        Long cinemaHallId = 1L;
+
+        // Mock
+        when(cinemaRepository.existsById(cinemaHallId)).thenReturn(true);
+
+        // Act
+        boolean doesExist = cinemaHallService.doesCinemaHallExist(cinemaHallId);
+
+        // Assert
+        assertTrue(doesExist);
+    }
+
+    @Test
+    @Order(12)
+    void test_DoesCinemaHallExist_WhenNotExists_ThenFalse() {
+        // Arrange
+        Long cinemaHallId = 1L;
+
+        // Mock
+        when(cinemaRepository.existsById(cinemaHallId)).thenReturn(false);
+
+        // Act
+        boolean doesExist = cinemaHallService.doesCinemaHallExist(cinemaHallId);
+
+        // Assert
+        assertFalse(doesExist);
     }
 }

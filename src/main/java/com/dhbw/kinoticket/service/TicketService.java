@@ -1,5 +1,8 @@
 package com.dhbw.kinoticket.service;
 
+import com.dhbw.kinoticket.entity.Discount;
+import com.dhbw.kinoticket.entity.Reservation;
+import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.entity.Ticket;
 import com.dhbw.kinoticket.repository.TicketRepository;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,14 @@ public class TicketService {
     }
 
     // Create ticket
+    public Ticket createTicket(Discount discount, Reservation reservation, Seat seat) {
+        return Ticket.builder()
+                .seat(seat)
+                .discount(discount)
+                .isValid(true)
+                .reservation(reservation)
+                .build();
+    }
 
     // Book ticket
 

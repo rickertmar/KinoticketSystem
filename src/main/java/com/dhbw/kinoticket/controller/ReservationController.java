@@ -1,17 +1,19 @@
 package com.dhbw.kinoticket.controller;
 
-import com.dhbw.kinoticket.entity.Reservation;
+import com.dhbw.kinoticket.entity.User;
+import com.dhbw.kinoticket.request.CreateReservationRequest;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import com.dhbw.kinoticket.service.ReservationService;
 import com.dhbw.kinoticket.service.TicketService;
+import com.dhbw.kinoticket.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReservationController {
 
     private final ReservationService reservationService;
-
+    private final UserService userService;
     private final TicketService ticketService;
 
     @PreAuthorize("hasAuthority('worker:read')")
@@ -30,6 +32,19 @@ public class ReservationController {
             return new ResponseEntity<>(response, HttpStatus.FOUND);
         } catch (Exception e) {
             return  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Booking: Create reservation and tickets
+    @PostMapping(value = "")
+    public ResponseEntity<?> createReservation(HttpServletRequest httpServletRequest,
+                                               @RequestBody CreateReservationRequest request) {
+        Principal principal = httpServletRequest.getUserPrincipal();
+        try {
+            User user = userService.getUserByEmail(principal.getName());
+            return new ResponseEntity<>(reservationService.createReservation(request, user), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to create reservation.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

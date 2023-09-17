@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.controller;
 
+import com.dhbw.kinoticket.entity.Discount;
 import com.dhbw.kinoticket.entity.Ticket;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import com.dhbw.kinoticket.service.ReservationService;
@@ -78,7 +79,7 @@ class ReservationControllerTest {
     public void test_GetAllTickets_WhenValidRequest_ThenReturnFound() throws Exception {
         // Arrange
         List<Ticket> tickets = Arrays.asList(
-                new Ticket(1L, null, null, 12.70, false, false, null, null)
+                new Ticket(1L, null, Discount.REGULAR, true, null)
         );
 
         when(ticketService.getAllTickets()).thenReturn(tickets);
@@ -95,7 +96,7 @@ class ReservationControllerTest {
     public void test_GetTicketById_WhenValidRequest_ThenReturnFound() throws Exception {
         // Arrange
         Long ticketId = 1L;
-        Ticket ticket = new Ticket(ticketId, null, null, 12.70, false, false, null, null);
+        Ticket ticket = new Ticket(ticketId, null, Discount.REGULAR, true, null);
 
         // Mock
         when(ticketService.getTicketById(ticketId)).thenReturn(ticket);
@@ -104,7 +105,6 @@ class ReservationControllerTest {
         mockMvc.perform(get("/reservation/tickets/{ticketId}", ticketId))
                 .andExpect(MockMvcResultMatchers.status().isFound())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(1L))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.price").value(12.70))
                 .andDo(print());
     }
 

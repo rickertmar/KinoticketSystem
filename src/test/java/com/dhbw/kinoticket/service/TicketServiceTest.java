@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.service;
 
+import com.dhbw.kinoticket.entity.Discount;
 import com.dhbw.kinoticket.entity.Ticket;
 import com.dhbw.kinoticket.repository.TicketRepository;
 import org.junit.jupiter.api.*;
@@ -31,8 +32,8 @@ public class TicketServiceTest {
 
     @BeforeEach
     public void setUp() {
-        Ticket ticket1 = new Ticket(1L, null, null, 12.70, false, false, null, null);
-        Ticket ticket2 = new Ticket(2L, null, null, 9.70, true, false, null, null);
+        Ticket ticket1 = new Ticket(1L, null, Discount.REGULAR, true, null);
+        Ticket ticket2 = new Ticket(2L, null, Discount.CHILD, true, null);
         ticketList = Arrays.asList(ticket1, ticket2);
     }
 

@@ -19,7 +19,6 @@ public class Ticket {
     @JoinColumn(name="seat_id")
     private Seat seat;
 
-    private double price;
     private Discount discount;
     private boolean isValid;
 

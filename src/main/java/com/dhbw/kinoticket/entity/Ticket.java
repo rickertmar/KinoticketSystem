@@ -14,24 +14,18 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name="showing_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private Showing showing;
 
-    @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name="seat_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @OneToOne(cascade = CascadeType.DETACH)
+    @JoinColumn(name="seat_id")
     private Seat seat;
 
     private double price;
-    private boolean isDiscounted;
-    private boolean isBooked;
+    private Discount discount;
+    private boolean isValid;
 
     @ManyToOne
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
-    @ManyToOne
-    @JoinColumn(name = "refund_id") // relation to Refund
-    private Refund refund;
 
 }

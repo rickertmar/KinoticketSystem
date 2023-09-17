@@ -38,11 +38,11 @@ public class ReservationService {
         var response = WorkerReservationResponse.builder()
                 .id(reservation.getId())
                 .total(reservation.getTotal())
-                .isPaid(reservation.isPayed())
+                .isPaid(reservation.isPaid())
                 .userName(null) // TODO Logic missing
                 .movieStart(null) // TODO Logic missing
                 .movieName(null) // TODO Logic missing
-                .tickets(reservation.getBookedTickets())
+                .tickets(reservation.getTickets())
                 .build();
         return response;
     }

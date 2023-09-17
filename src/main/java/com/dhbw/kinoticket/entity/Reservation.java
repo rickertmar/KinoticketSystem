@@ -17,12 +17,21 @@ public class Reservation {
     private Long id;
     @Column(name = "total")
     private double total;
-    @Column(name = "isPayed")
-    private boolean isPayed;
+    @Column(name = "isPaid")
+    private boolean isPaid;
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
-    private List<Ticket> reservedTickets;
-    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
-    private List<Ticket> bookedTickets;
+    private List<Ticket> Tickets;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "showing_id")
+    private Showing showing;
+
+    @OneToOne
+    @JoinColumn(name = "refund_id")
+    private Refund refund;
 }

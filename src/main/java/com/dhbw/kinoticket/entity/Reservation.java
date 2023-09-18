@@ -21,7 +21,7 @@ public class Reservation {
     private boolean isPaid;
 
     @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
-    private List<Ticket> Tickets = new ArrayList<>();
+    private List<Ticket> tickets = new ArrayList<>();
 
     @ManyToOne
     @JoinColumn(name = "user_id")

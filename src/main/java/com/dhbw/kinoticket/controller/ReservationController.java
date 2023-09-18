@@ -2,6 +2,7 @@ package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import com.dhbw.kinoticket.service.ReservationService;
 import com.dhbw.kinoticket.service.TicketService;
@@ -42,7 +43,8 @@ public class ReservationController {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {
             User user = userService.getUserByEmail(principal.getName());
-            return new ResponseEntity<>(reservationService.createReservation(request, user), HttpStatus.OK);
+            ReservationResponse response = reservationService.createReservation(request, user);
+            return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to create reservation.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -74,3 +76,16 @@ public class ReservationController {
     }
 
 }
+
+
+/*
+
+CreateReservationRequest:
+{
+  "selectedSeatIdList": [1, 2],
+  "discountList": ["REGULAR", "STUDENT"],
+  "isPaid": true,
+  "showingId": 1
+}
+
+*/

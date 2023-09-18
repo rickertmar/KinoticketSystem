@@ -1,6 +1,8 @@
 package com.dhbw.kinoticket.service;
 
 import com.dhbw.kinoticket.entity.Discount;
+import com.dhbw.kinoticket.entity.Reservation;
+import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.entity.Ticket;
 import com.dhbw.kinoticket.repository.TicketRepository;
 import org.junit.jupiter.api.*;
@@ -77,5 +79,38 @@ public class TicketServiceTest {
         // Act & Assert
         Exception exception = assertThrows(IllegalArgumentException.class, () -> ticketService.getTicketById(3L));
         assertEquals("Ticket not found with ID: 3", exception.getMessage());
+    }
+
+    @Test
+    @Order(4)
+    public void test_CreateTicket_WhenValidInputs_ThenReturnTicket() {
+        // Arrange
+        Discount discount = Discount.REGULAR;
+        Reservation reservation = new Reservation();
+        Seat seat = new Seat();
+        seat.setBlocked(true);
+
+        // Act
+        Ticket actualTicket = ticketService.createTicket(discount, reservation, seat);
+
+        // Assert
+        assertEquals(discount, actualTicket.getDiscount());
+        assertEquals(reservation, actualTicket.getReservation());
+        assertEquals(seat, actualTicket.getSeat());
+    }
+
+    @Test
+    @Order(5)
+    public void test_CreateTicket_WhenAnyInputs_ThenIsValidTrue() {
+        // Arrange
+        Discount discount = Discount.REGULAR;
+        Reservation reservation = new Reservation();
+        Seat seat = new Seat();
+
+        // Act
+        Ticket actualTicket = ticketService.createTicket(discount, reservation, seat);
+
+        // Assert
+        assertEquals(true, actualTicket.isValid());
     }
 }

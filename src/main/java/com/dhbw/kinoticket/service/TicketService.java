@@ -31,6 +31,7 @@ public class TicketService {
 
     // Create ticket
     public Ticket createTicket(Discount discount, Reservation reservation, Seat seat) {
+        System.out.println("Creating ticket for discount: " + discount);
         return Ticket.builder()
                 .seat(seat)
                 .discount(discount)

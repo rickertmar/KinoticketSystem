@@ -5,10 +5,12 @@ import com.dhbw.kinoticket.repository.ReservationRepository;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -21,21 +23,18 @@ public class ReservationService {
     private final TicketService ticketService;
 
     public WorkerReservationResponse getWorkerReservationById(Long id) {
-        List<Reservation> reservations = reservationRepository.findAll();
-        Reservation reservation = null;
-        for (Reservation reservationsRecord:reservations) {
-            if (reservationsRecord.getId() == id) {
-                reservation = reservationsRecord;
-            }
-        }
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Showing not found with ID: " + id));
         return convertToWorkerResponse(reservation);
     }
 
     // Booking: Create reservation and tickets
+    @Transactional
     public ReservationResponse createReservation(CreateReservationRequest request, User user) {
         // Initialize reservation with user
         Reservation reservation = Reservation.builder()
                 .user(user)
+                .tickets(new ArrayList<>())
                 .build();
 
         // Fetch showing from repository
@@ -44,14 +43,22 @@ public class ReservationService {
 
         // Iterate through requested seat IDs
         for (Long seatId : request.getSelectedSeatIdList()) {
+            boolean seatFound = false;
             for (Seat seat : seats) {
                 if (seat.getId().equals(seatId)) {
+                    seatFound = true;
                     // Create and add ticket to reservation for each discount
                     for (Discount discount : request.getDiscountList()) {
                         Ticket ticket = ticketService.createTicket(discount, reservation, seat);
                         reservation.getTickets().add(ticket);
+                        break; // Break out of the inner loop once the discount is used
                     }
+                    break; // Break out of the inner loop once a matching seat is found
                 }
+            }
+            if (!seatFound) {
+                // Handle the case when a seat with the given seatId is not found
+                throw new IllegalArgumentException("Seat not found with ID: " + seatId);
             }
         }
 

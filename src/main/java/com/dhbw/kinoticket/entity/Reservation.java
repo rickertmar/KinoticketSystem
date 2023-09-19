@@ -20,7 +20,7 @@ public class Reservation {
     private double total;
     private boolean isPaid;
 
-    @OneToMany(mappedBy = "reservation", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "reservation", cascade = CascadeType.REMOVE)
     private List<Ticket> tickets = new ArrayList<>();
 
     @ManyToOne

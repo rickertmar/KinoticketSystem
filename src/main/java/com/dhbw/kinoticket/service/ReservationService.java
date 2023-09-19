@@ -3,6 +3,7 @@ package com.dhbw.kinoticket.service;
 import com.dhbw.kinoticket.entity.*;
 import com.dhbw.kinoticket.repository.ReservationRepository;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.response.MovieResponse;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import jakarta.transaction.Transactional;
@@ -30,7 +31,7 @@ public class ReservationService {
 
     // Booking: Create reservation and tickets
     @Transactional
-    public ReservationResponse createReservation(CreateReservationRequest request, User user) {
+    public ReservationResponse createReservation(CreateReservationRequest request, User user) { // TODO prevent from creating single tickets twice
         // Initialize reservation with user
         Reservation reservation = Reservation.builder()
                 .user(user)
@@ -39,7 +40,8 @@ public class ReservationService {
 
         // Fetch showing from repository
         Showing showing = showingService.getShowingById(request.getShowingId());
-        List<Seat> seats = showing.getCinemaHall().getSeats();
+        List<Seat> seats = showing.getCinemaHall().getSeats(); // TODO change to (free)SeatsList of showing
+        reservation.setShowing(showing);
 
         // Iterate through requested seat IDs
         for (Long seatId : request.getSelectedSeatIdList()) {
@@ -51,7 +53,6 @@ public class ReservationService {
                     for (Discount discount : request.getDiscountList()) {
                         Ticket ticket = ticketService.createTicket(discount, reservation, seat);
                         reservation.getTickets().add(ticket);
-                        break; // Break out of the inner loop once the discount is used
                     }
                     break; // Break out of the inner loop once a matching seat is found
                 }
@@ -78,15 +79,36 @@ public class ReservationService {
         reservation.setTotal(total);
 
         // Mark reservation as paid and save it
-        reservation.setPaid(request.isPaid());
+        reservation.setPaid(true);
         reservationRepository.save(reservation);
+
+        // Convert Movie entity to MovieDTO
+        MovieResponse movieResponse = convertToMovieDTO(showing.getMovie());
 
         // Return ReservationResponse entity
         return ReservationResponse.builder()
-                .movie(showing.getMovie())
+                .movie(movieResponse)
                 .time(showing.getTime())
                 .tickets(ticketList)
                 .total(total)
+                .build();
+    }
+
+
+    private MovieResponse convertToMovieDTO(Movie movie) {
+        return MovieResponse.builder()
+                .id(movie.getId())
+                .title(movie.getTitle())
+                .fsk(movie.getFsk())
+                .description(movie.getDescription())
+                .releaseYear(movie.getReleaseYear())
+                .genres(movie.getGenres())
+                .director(movie.getDirector())
+                .runningWeek(movie.getRunningWeek())
+                .runtime(movie.getRuntime())
+                .releaseCountry(movie.getReleaseCountry())
+                .imageSrc(movie.getImageSrc())
+                .actors(movie.getActors())
                 .build();
     }
 
@@ -95,7 +117,7 @@ public class ReservationService {
             return null;
         }
 
-        var response = WorkerReservationResponse.builder()
+        return WorkerReservationResponse.builder()
                 .id(reservation.getId())
                 .total(reservation.getTotal())
                 .isPaid(reservation.isPaid())
@@ -104,6 +126,5 @@ public class ReservationService {
                 .movieName(null) // TODO Logic missing
                 .tickets(reservation.getTickets())
                 .build();
-        return response;
     }
 }

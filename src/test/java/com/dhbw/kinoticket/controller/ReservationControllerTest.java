@@ -68,7 +68,7 @@ class ReservationControllerTest {
     @Order(1)
     void test_getWorkerReservationById_ShouldReturnWorkerReservationResponse() throws Exception {
         // Arrange
-        Long reservationId = 1l;
+        Long reservationId = 1L;
         WorkerReservationResponse response = new WorkerReservationResponse(1L, 10.0, true, null, null, null, null);
 
         // Mock
@@ -125,7 +125,7 @@ class ReservationControllerTest {
     //@Order()
     public void test_GetAllTickets_WhenValidRequest_ThenReturnFound() throws Exception {
         // Arrange
-        List<Ticket> tickets = Arrays.asList(
+        List<Ticket> tickets = List.of(
                 new Ticket(1L, null, Discount.REGULAR, true, null)
         );
 

@@ -1,6 +1,7 @@
 package com.dhbw.kinoticket.service;
 
 import com.dhbw.kinoticket.entity.CinemaHall;
+import com.dhbw.kinoticket.entity.Movie;
 import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.entity.Showing;
 import com.dhbw.kinoticket.repository.MovieRepository;
@@ -44,15 +45,30 @@ public class ShowingService {
 
     // Create showing
     public Showing createShowing(CreateShowingRequest request) {
+        Movie movie = movieService.getMovieById(request.getMovieId());
+        CinemaHall cinemaHall = cinemaHallService.getCinemaHallById(request.getCinemaHallId());
         Showing showing = Showing.builder()
-                .movie(movieService.getMovieById(request.getMovieId()))
+                .movie(movie)
                 .time(request.getTime())
                 .showingExtras(request.getShowingExtras())
-                .cinemaHall(cinemaHallService.getCinemaHallById(request.getCinemaHallId()))
+                .seatPrice(request.getSeatPrice())
+                .cinemaHall(cinemaHall)
                 .build();
 
         Set<Seat> seats = getSeatsOfCinemaHall(request.getCinemaHallId());
-        showing.setFreeSeats(seats);
+        Set<Seat> copiedSeats = new HashSet<>();
+        for (Seat seat : seats) {
+            Seat copiedSeat = Seat.builder()
+                    .seatRow(seat.getSeatRow())
+                    .number(seat.getNumber())
+                    .xLoc(seat.getXLoc())
+                    .yLoc(seat.getYLoc())
+                    .isBlocked(seat.isBlocked())
+                    .cinemaHall(cinemaHall)
+                    .build();
+            copiedSeats.add(copiedSeat);
+        }
+        showing.setFreeSeats(copiedSeats);
 
         return showingRepository.save(showing);
     }

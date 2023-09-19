@@ -31,13 +31,13 @@ public class TicketService {
 
     // Create ticket
     public Ticket createTicket(Discount discount, Reservation reservation, Seat seat) {
-        System.out.println("Creating ticket for discount: " + discount);
-        return Ticket.builder()
+        Ticket ticket = Ticket.builder()
                 .seat(seat)
                 .discount(discount)
                 .isValid(true)
                 .reservation(reservation)
                 .build();
+        return ticketRepository.save(ticket);
     }
 
     // Book ticket

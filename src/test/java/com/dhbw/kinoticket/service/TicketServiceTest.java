@@ -6,18 +6,15 @@ import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.entity.Ticket;
 import com.dhbw.kinoticket.repository.TicketRepository;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -111,6 +108,6 @@ public class TicketServiceTest {
         Ticket actualTicket = ticketService.createTicket(discount, reservation, seat);
 
         // Assert
-        assertEquals(true, actualTicket.isValid());
+        assertTrue(actualTicket.isValid());
     }
 }

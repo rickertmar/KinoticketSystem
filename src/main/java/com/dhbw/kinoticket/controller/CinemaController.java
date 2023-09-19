@@ -234,6 +234,9 @@ Create Cinema json format
     "postcode": "58368"
 }
 
+Create CinemaHall -> Text format
+TestCinemaHallName
+
 Add Seats to CinemaHall
 [
     {

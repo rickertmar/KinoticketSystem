@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ReservationResponse {
 
-    private Movie movie;
+    private MovieResponse movie;
     private LocalDateTime time;
     private List<Ticket> tickets;
     private double total;

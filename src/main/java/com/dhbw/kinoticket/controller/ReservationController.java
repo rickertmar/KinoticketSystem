@@ -88,4 +88,52 @@ CreateReservationRequest:
   "showingId": 1
 }
 
+ReservationResponse:
+{
+    "movie": {
+        "id": 2,
+        "title": "Movie 1",
+        "fsk": "FSK12",
+        "description": "Description 1",
+        "releaseYear": 2021,
+        "genres": "Genre 1",
+        "director": "Director 1",
+        "runningWeek": 1,
+        "runtime": "120 minutes",
+        "releaseCountry": "Country 1",
+        "imageSrc": "image1.jpg",
+        "actors": "Actor 1"
+    },
+    "time": "2022-01-01T10:00:00",
+    "tickets": [
+        {
+            "id": 1,
+            "seat": {
+                "id": 1,
+                "seatRow": "A",
+                "number": 1,
+                "blocked": true,
+                "xloc": 10,
+                "yloc": 20
+            },
+            "discount": "CHILD",
+            "valid": true
+        },
+        {
+            "id": 2,
+            "seat": {
+                "id": 2,
+                "seatRow": "B",
+                "number": 2,
+                "blocked": true,
+                "xloc": 20,
+                "yloc": 20
+            },
+            "discount": "STUDENT",
+            "valid": true
+        }
+    ],
+    "total": 5.0
+}
+
 */

@@ -125,9 +125,12 @@ public class ReservationServiceTest {
         CinemaHall cinemaHall = new CinemaHall();
         cinemaHall.setSeats(seatList);
 
+        Movie movie = new Movie(1L, "Movie title", FSK.FSK16, "Movie description", 2023, "Horror", "Director", 2, "1h 20min", "USA", "src", "Actors", null);
+
         Showing showing = new Showing();
         showing.setSeatPrice(5.0);
         showing.setCinemaHall(cinemaHall);
+        showing.setMovie(movie);
 
         List<Ticket> tickets = new ArrayList<>();
         Ticket ticket1 = new Ticket();
@@ -149,9 +152,9 @@ public class ReservationServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(showing.getMovie(), result.getMovie());
-        assertEquals(tickets, result.getTickets());
-        assertEquals(reservation.getTotal(), result.getTotal());
+        assertEquals(showing.getMovie().getTitle(), result.getMovie().getTitle());
+        assertEquals(tickets, result.getTickets());  // fix createReservation creating each ticket twice
+        assertEquals(reservation.getTotal(), result.getTotal());// fix createReservation creating each ticket twice
     }
 
     @Test
@@ -175,9 +178,12 @@ public class ReservationServiceTest {
         cinemaHall.setId(1L);
         cinemaHall.setSeats(seatList);
 
+        Movie movie = new Movie(1L, "Movie title", FSK.FSK16, "Movie description", 2023, "Horror", "Director", 2, "1h 20min", "USA", "src", "Actors", null);
+
         Showing showing = new Showing();
         showing.setSeatPrice(5.0);
         showing.setCinemaHall(cinemaHall);
+        showing.setMovie(movie);
 
         when(showingService.getShowingById(request.getShowingId())).thenReturn(showing);
 
@@ -186,7 +192,7 @@ public class ReservationServiceTest {
 
         // Assert
         assertNotNull(result);
-        assertEquals(showing.getMovie(), result.getMovie());
+        assertEquals(showing.getMovie().getTitle(), result.getMovie().getTitle());
         assertEquals(showing.getTime(), result.getTime());
         assertTrue(result.getTickets().isEmpty());
         assertEquals(0.0, result.getTotal());

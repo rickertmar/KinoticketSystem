@@ -5,6 +5,7 @@ import com.dhbw.kinoticket.entity.Movie;
 import com.dhbw.kinoticket.entity.Ticket;
 import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.response.MovieResponse;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import com.dhbw.kinoticket.service.ReservationService;
@@ -82,23 +83,28 @@ class ReservationControllerTest {
     }
 
     @Test
-    @Disabled // Actual 500 TODO
+    @Disabled // Expected 200 - Actual 500
     public void test_CreateReservation_WhenValidRequest_ThenReturnOk() throws Exception {
         // Arrange
-        CreateReservationRequest request = new CreateReservationRequest();
-        request.setSelectedSeatIdList(List.of(1L, 2L));
-        request.setDiscountList(List.of(Discount.STUDENT, Discount.CHILD));
-        request.setPaid(true);
-        request.setShowingId(1L);
+        CreateReservationRequest request = CreateReservationRequest.builder()
+                .selectedSeatIdList(List.of(1L, 2L))
+                .discountList(List.of(Discount.STUDENT, Discount.CHILD))
+                .isPaid(true)
+                .showingId(1L)
+                .build();
 
-        User user = new User();
-        user.setEmail("test@example.com");
+        User user = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .build();
 
-        ReservationResponse response = new ReservationResponse();
-        response.setMovie(new Movie());
-        response.setTickets(new ArrayList<>());
-        response.setTotal(10.0);
+        ReservationResponse response = ReservationResponse.builder()
+                .movie(MovieResponse.builder().id(1L).title("Movie").build())
+                .tickets(new ArrayList<>())
+                .total(5.0)
+                .build();
 
+        // Mock
         Principal principal = mock(Principal.class);
         when(principal.getName()).thenReturn("test@example.com");
         when(userService.getUserByEmail(principal.getName())).thenReturn(user);

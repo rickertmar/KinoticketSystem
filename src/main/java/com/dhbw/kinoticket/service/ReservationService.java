@@ -40,20 +40,22 @@ public class ReservationService {
 
         // Fetch showing from repository
         Showing showing = showingService.getShowingById(request.getShowingId());
-        List<Seat> seats = showing.getCinemaHall().getSeats(); // TODO change to (free)SeatsList of showing
         reservation.setShowing(showing);
 
         // Iterate through requested seat IDs
-        for (Long seatId : request.getSelectedSeatIdList()) {
+        List<Seat> seats = showing.getCinemaHall().getSeats(); // TODO change to (free)SeatsList of showing
+        List<Long> selectedSeatIdList = request.getSelectedSeatIdList();
+        List<Discount> discountList = request.getDiscountList();
+        for (int i = 0; i < selectedSeatIdList.size(); i++) {
+            Long seatId = selectedSeatIdList.get(i);
             boolean seatFound = false;
             for (Seat seat : seats) {
                 if (seat.getId().equals(seatId)) {
                     seatFound = true;
-                    // Create and add ticket to reservation for each discount
-                    for (Discount discount : request.getDiscountList()) {
-                        Ticket ticket = ticketService.createTicket(discount, reservation, seat);
-                        reservation.getTickets().add(ticket);
-                    }
+                    Discount discount = discountList.get(i);
+                    // Create a ticket for each seat with the corresponding discount
+                    Ticket ticket = ticketService.createTicket(discount, reservation, seat);
+                    reservation.getTickets().add(ticket);
                     break; // Break out of the inner loop once a matching seat is found
                 }
             }

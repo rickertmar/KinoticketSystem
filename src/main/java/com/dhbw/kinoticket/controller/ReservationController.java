@@ -80,12 +80,12 @@ public class ReservationController {
 
 /*
 
-CreateReservationRequest:
 {
   "selectedSeatIdList": [1, 2],
-  "discountList": ["REGULAR", "STUDENT"],
-  "isPaid": true,
-  "showingId": 1
+  "studentDiscounts": 1,
+  "childDiscounts": 1,
+  "noDiscounts": 0,
+  "showingId": 102
 }
 
 ReservationResponse:

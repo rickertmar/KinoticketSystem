@@ -1,11 +1,14 @@
 package com.dhbw.kinoticket.service;
 
+import com.dhbw.kinoticket.entity.Token;
 import com.dhbw.kinoticket.entity.User;
+import com.dhbw.kinoticket.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -17,8 +20,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
+@RequiredArgsConstructor
 public class JwtService {
-
+    private final TokenRepository tokenRepository;
     private final String SECRET_KEY = "5b4a858e84bd2a005d70c95702d21c566f66a767ed85ce196d1e985d40565ee5";
     private final long jwtExpiration = 1000 * 60 * 60; // ms | s | m | h
     private final long refreshExpiration = 1000 * 60 * 60 * 6; // ms | s | m | h
@@ -38,7 +42,7 @@ public class JwtService {
         return buildToken(extraClaims, userDetails, jwtExpiration);
     }
 
-    private String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
+    String buildToken(Map<String, Object> extraClaims, UserDetails userDetails, long expiration) {
         return Jwts
                .builder()
                .setClaims(extraClaims)
@@ -51,7 +55,9 @@ public class JwtService {
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) &&!isTokenExpired(token));
+        Token token1 = tokenRepository.findByToken(token).orElseThrow();
+
+        return (username.equals(userDetails.getUsername()) &&!isTokenExpired(token) &&!token1.isExpired() &&!token1.isRevoked());
     }
 
     private boolean isTokenExpired(String token) {
@@ -71,7 +77,7 @@ public class JwtService {
                 .getBody();
     }
 
-    private Key getSignInKey() {
+    Key getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }

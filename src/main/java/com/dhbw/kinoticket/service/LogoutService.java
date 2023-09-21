@@ -7,8 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+@Component
 @Service
 @RequiredArgsConstructor
 public class LogoutService implements LogoutHandler {
@@ -22,7 +24,8 @@ public class LogoutService implements LogoutHandler {
             return;
         }
         jwt = authHeader.substring(7);
-        var storedToken = tokenRepository.findByToken(jwt).orElse(null);
+        var storedToken = tokenRepository.findByToken(jwt).orElseThrow(() -> new IllegalArgumentException("Token not found: " + jwt));
+        ;
         if(storedToken != null) {
             storedToken.setExpired(true);
             storedToken.setRevoked(true);

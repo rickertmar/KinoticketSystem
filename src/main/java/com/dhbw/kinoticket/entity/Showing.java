@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,18 +18,33 @@ public class Showing {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="movie_id", referencedColumnName = "id", insertable = false, updatable = false)
+    private double seatPrice;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="movie_id")
     private Movie movie;
 
     private LocalDateTime time;
+    private String showingExtras;
 
-    private int cinemaHall;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "showing_free_seats",
+            joinColumns = @JoinColumn(name = "showing_id"),
+            inverseJoinColumns = @JoinColumn(name = "seat_id")
+    )
+    private Set<Seat> freeSeats;
 
-    @ManyToMany
-    Set<Seat> freeSeats;
-    @ManyToMany
-    Set<Seat> blockedSeats;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(
+            name = "showing_blocked_seats",
+            joinColumns = @JoinColumn(name = "showing_id"),
+            inverseJoinColumns = @JoinColumn(name = "seat_id")
+    )
+    private Set<Seat> blockedSeats;
 
-
+    @JsonIgnore
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cinema_hall_id")
+    private CinemaHall cinemaHall;
 }

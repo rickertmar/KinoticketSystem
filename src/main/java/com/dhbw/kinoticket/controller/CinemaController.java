@@ -3,10 +3,12 @@ package com.dhbw.kinoticket.controller;
 import com.dhbw.kinoticket.entity.Cinema;
 import com.dhbw.kinoticket.entity.CinemaHall;
 import com.dhbw.kinoticket.entity.LocationAddress;
+import com.dhbw.kinoticket.entity.Movie;
 import com.dhbw.kinoticket.request.CreateCinemaRequest;
 import com.dhbw.kinoticket.request.CreateSeatRequest;
 import com.dhbw.kinoticket.service.CinemaHallService;
 import com.dhbw.kinoticket.service.CinemaService;
+import com.dhbw.kinoticket.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import java.util.List;
 public class CinemaController {
     private final CinemaService cinemaService;
     private final CinemaHallService cinemaHallService;
+    private final MovieService movieService;
 
 
     //Get all cinemas
@@ -29,7 +32,7 @@ public class CinemaController {
     public ResponseEntity<List<Cinema>> getAllCinemas() {
         try {
             List<Cinema> cinemas = cinemaService.getAllCinemas();
-            return new ResponseEntity<List<Cinema>>(cinemas, HttpStatus.FOUND);
+            return new ResponseEntity<>(cinemas, HttpStatus.FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -162,7 +165,7 @@ public class CinemaController {
 
     //Delete CinemaHall
     @PreAuthorize("hasAuthority('admin:delete')")
-    @DeleteMapping("/{cinemaId}/cinemahalls/{cinemaHallId}")
+    @DeleteMapping(value = "/{cinemaId}/cinemahalls/{cinemaHallId}")
     public ResponseEntity<?> deleteCinemaHall(@PathVariable Long cinemaHallId,
                                               @PathVariable String cinemaId) {
         try {
@@ -170,6 +173,55 @@ public class CinemaController {
             return new ResponseEntity<>("CinemaHall deleted.", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to delete CinemaHall.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    // ----------------------------------------------------------------
+    //Movie "Controller"
+    // ----------------------------------------------------------------
+
+    // Get all movies
+    @GetMapping(value = "/{cinemaId}/movies")
+    public ResponseEntity<?> getAllMovies() {
+        try {
+            return new ResponseEntity<>(movieService.getAllMovies(), HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Get movie by id
+    @GetMapping(value = "/{cinemaId}/movies/{id}")
+    public ResponseEntity<?> getMovieById(@PathVariable Long id) {
+        try {
+            return new ResponseEntity<>(movieService.getMovieById(id), HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Create movie entity and add it to the cinema
+    @PreAuthorize("hasAuthority('admin:create')")
+    @PostMapping(value = "/{cinemaId}/movies")
+    public ResponseEntity<?> addMovieToCinema(@PathVariable Long cinemaId,
+                                              @RequestBody Movie movie) {
+        try {
+            return new ResponseEntity<>(movieService.addMovieToCinema(cinemaId, movie), HttpStatus.CREATED);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
+    }
+
+    // Delete movie by id and remove from associated cinema
+    @PreAuthorize("hasAuthority('admin:delete')")
+    @DeleteMapping(value = "/{cinemaId}/movies/{movieId}")
+    public ResponseEntity<?> removeMovieById(@PathVariable Long movieId) {
+        try {
+            movieService.removeMovie(movieId);
+            return new ResponseEntity<>("Movie deleted.", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
     }
 }
@@ -183,6 +235,9 @@ Create Cinema json format
     "country": "Germany",
     "postcode": "58368"
 }
+
+Create CinemaHall -> Text format
+TestCinemaHallName
 
 Add Seats to CinemaHall
 [
@@ -208,5 +263,20 @@ Add Seats to CinemaHall
         "blocked": false
     }
 ]
+
+Add movie
+{
+    "title": "Movie 1",
+    "fsk": "FSK12",
+    "description": "Description 1",
+    "releaseYear": 2021,
+    "genres": "Genre 1",
+    "director": "Director 1",
+    "runningWeek": 1,
+    "runtime": "120 minutes",
+    "releaseCountry": "Country 1",
+    "imageSrc": "image1.jpg",
+    "actors": "Actor 1"
+}
 
  */

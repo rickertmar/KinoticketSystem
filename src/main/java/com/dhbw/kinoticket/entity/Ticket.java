@@ -1,37 +1,34 @@
 package com.dhbw.kinoticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
+@Data
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity(name = "Ticket")
-@Getter
-@Setter
 public class Ticket {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="showing_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private Showing showing;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name="seat_id", referencedColumnName = "id", insertable = false, updatable = false)
+
+    @ManyToOne
+    @JoinColumn(name="seat_id")
     private Seat seat;
 
-    @Column(name = "price")
-    private int price;
-    @Column (name = "isDiscounted")
-    private boolean isDiscounted;
-    @Column(name = "isBooked")
-    private boolean isBooked;
+    @Enumerated(EnumType.STRING)
+    private Discount discount;
 
+    private boolean isValid;
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
-    @ManyToOne
-    @JoinColumn(name = "refund_id") // relation to Refund
-    private Refund refund;
 
 }

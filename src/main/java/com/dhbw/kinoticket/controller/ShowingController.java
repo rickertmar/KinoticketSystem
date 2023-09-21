@@ -61,7 +61,8 @@ public class ShowingController {
 
     // Update showing
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateShowing(@PathVariable Long id, @RequestBody CreateShowingRequest createShowingRequest) {
+    public ResponseEntity<?> updateShowing(@PathVariable Long id,
+                                           @RequestBody CreateShowingRequest createShowingRequest) {
         try {
             return new ResponseEntity<>(showingService.updateShowing(id, createShowingRequest), HttpStatus.OK);
         } catch (EntityNotFoundException e) {

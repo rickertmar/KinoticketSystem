@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.service;
 
+import ch.qos.logback.core.encoder.EchoEncoder;
 import com.dhbw.kinoticket.entity.Cinema;
 import com.dhbw.kinoticket.entity.LocationAddress;
 import com.dhbw.kinoticket.repository.CinemaRepository;
@@ -21,9 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CinemaService {
 
-    @Autowired
     private final CinemaRepository cinemaRepository;
-    @Autowired
     private final LocationAddressRepository locationAddressRepository;
 
     //Get all cinemas
@@ -31,16 +30,10 @@ public class CinemaService {
         return cinemaRepository.findAll();
     }
 
+
     //Find existing Cinema by id
     public Cinema getCinemaById(Long id) {
-        List<Cinema> cinemas = cinemaRepository.findAll();
-        Cinema cinema = null;
-        for (Cinema cinemaRecord:cinemas) {
-            if (cinemaRecord.getId() == id) {
-                cinema = cinemaRecord;
-            }
-        }
-        return cinema;
+        return cinemaRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Cinema not found with ID: " + id));
     }
 
     //Create new Cinema
@@ -72,25 +65,27 @@ public class CinemaService {
     //Update existing Cinema
     public Cinema updateCinema(Long id,
                                @Valid CreateCinemaRequest createCinemaRequest) {
-        Cinema existingCinema = getCinemaById(id);
-        if (existingCinema == null) {
+        try{
+            Cinema existingCinema = getCinemaById(id);
+            existingCinema.setName(createCinemaRequest.getName());
+
+            existingCinema.getLocationAddress().setStreet(createCinemaRequest.getStreet());
+            existingCinema.getLocationAddress().setCity(createCinemaRequest.getCity());
+            existingCinema.getLocationAddress().setCountry(createCinemaRequest.getCountry());
+            existingCinema.getLocationAddress().setPostcode(createCinemaRequest.getPostcode());
+
+            cinemaRepository.save(existingCinema);
+            return existingCinema;
+        }catch (Exception e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CINEMA_NOT_FOUND");
         }
-        existingCinema.setName(createCinemaRequest.getName());
 
-        existingCinema.getLocationAddress().setStreet(createCinemaRequest.getStreet());
-        existingCinema.getLocationAddress().setCity(createCinemaRequest.getCity());
-        existingCinema.getLocationAddress().setCountry(createCinemaRequest.getCountry());
-        existingCinema.getLocationAddress().setPostcode(createCinemaRequest.getPostcode());
-
-        cinemaRepository.save(existingCinema);
-        return existingCinema;
     }
 
     //Delete Cinema by id
     public void deleteCinema(Long id) {
         try {
-            Cinema cinema = cinemaRepository.findById(id).get();
+            Cinema cinema = getCinemaById(id);
             cinemaRepository.delete(cinema);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error deleting");
@@ -105,14 +100,16 @@ public class CinemaService {
     @Transactional
     public Cinema updateLocationAddress(Long id,
                                         @Valid LocationAddress locationAddress) {
-        Cinema cinema = getCinemaById(id);
-        if (cinema == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Cinema not found");
+        try{
+            Cinema cinema = getCinemaById(id);
+            Long oldLocationId = cinema.getLocationAddress().getId();
+            locationAddressRepository.deleteById(oldLocationId);
+            cinema.setLocationAddress(locationAddress);
+            cinemaRepository.save(cinema);
+            return cinema;
+        }catch (Exception e){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CINEMA_NOT_FOUND");
         }
-        Long oldLocationId = cinema.getLocationAddress().getId();
-        locationAddressRepository.deleteById(oldLocationId);
-        cinema.setLocationAddress(locationAddress);
 
-        return cinemaRepository.save(cinema);
     }
 }

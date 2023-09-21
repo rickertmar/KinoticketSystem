@@ -18,6 +18,8 @@ public class Showing {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    private double seatPrice;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="movie_id")
     private Movie movie;

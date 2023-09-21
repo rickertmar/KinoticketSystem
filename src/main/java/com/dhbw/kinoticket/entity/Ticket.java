@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,24 +15,20 @@ public class Ticket {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name="showing_id", referencedColumnName = "id", insertable = false, updatable = false)
-    private Showing showing;
 
-    @ManyToOne(cascade = CascadeType.DETACH)
-    @JoinColumn(name="seat_id", referencedColumnName = "id", insertable = false, updatable = false)
+    @ManyToOne
+    @JoinColumn(name="seat_id")
     private Seat seat;
 
-    private int price;
-    private boolean isDiscounted;
-    private boolean isBooked;
+    @Enumerated(EnumType.STRING)
+    private Discount discount;
 
+    private boolean isValid;
+
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "reservation_id")
     private Reservation reservation;
 
-    @ManyToOne
-    @JoinColumn(name = "refund_id") // relation to Refund
-    private Refund refund;
 
 }

@@ -16,13 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MovieService {
 
-    @Autowired
     private final MovieRepository movieRepository;
-
-    @Autowired
     private final CinemaRepository cinemaRepository;
-
-    @Autowired
     private final CinemaService cinemaService;
 
     // Get all movies
@@ -53,8 +48,7 @@ public class MovieService {
 
     // Remove movie from the cinema
     public void removeMovie(Long movieId) {
-        Movie movie = movieRepository.findById(movieId)
-                .orElseThrow(() -> new IllegalArgumentException("Movie not found with ID: " + movieId));
+        Movie movie = getMovieById(movieId);
 
         Cinema cinema = movie.getCinema();
         if (cinema != null) {

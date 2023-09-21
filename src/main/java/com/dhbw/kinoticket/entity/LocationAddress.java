@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 @Data
@@ -10,6 +11,7 @@ import lombok.*;
 public class LocationAddress {
 
     @Id
+    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String street;

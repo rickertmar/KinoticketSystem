@@ -54,13 +54,10 @@ public class CinemaHallServiceTest {
         // Arrange
         Long cinemaHallId = 1L;
         String cinemaHallName = "Name 1";
-        List<CinemaHall> myCinemaHalls = new ArrayList<>();
-        myCinemaHalls.add(new CinemaHall(1L, "Name 1", null, null));
-        myCinemaHalls.add(new CinemaHall(2L, "Name 2", null, null));
-        myCinemaHalls.add(new CinemaHall(3L, "Name 3", null, null));
+        CinemaHall cinemaHall = new CinemaHall(cinemaHallId, cinemaHallName, null, null);
 
         // Mock
-        when(cinemaHallRepository.findAll()).thenReturn(myCinemaHalls);
+        when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.of(cinemaHall));
 
         // Act
         CinemaHall actualCinemaHall = cinemaHallService.getCinemaHallById(cinemaHallId);
@@ -68,6 +65,7 @@ public class CinemaHallServiceTest {
         // Assert
         assertEquals(cinemaHallId, actualCinemaHall.getId());
         assertEquals(cinemaHallName, actualCinemaHall.getName());
+
     }
 
     @Test
@@ -75,16 +73,13 @@ public class CinemaHallServiceTest {
     void test_getCinemaHallById_WhenNotFound_ThenAssertNull() {
         // Arrange
         Long cinemaHallId = 2L;
-        List<CinemaHall> cinemaHalls = new ArrayList<>();
 
-        // Mock
-        when(cinemaHallRepository.findAll()).thenReturn(cinemaHalls);
-
-        // Act
-        CinemaHall actualCinemaHall = cinemaHallService.getCinemaHallById(cinemaHallId);
+        when(cinemaHallRepository.findById(cinemaHallId)).thenThrow(new IllegalArgumentException("CinemaHall not found with ID: " + cinemaHallId));
 
         // Assert
-        assertNull(actualCinemaHall);
+        assertThrows(IllegalArgumentException.class, () -> {
+            cinemaHallService.getCinemaHallById(cinemaHallId);
+        });
     }
 
     @Test
@@ -127,32 +122,35 @@ public class CinemaHallServiceTest {
         List<CinemaHall> cinemaHallList = new ArrayList<>();
         cinemaHallList.add(cinemaHall);
 
-        // Mock
-        when(cinemaHallRepository.findAll()).thenReturn(cinemaHallList);
+// Mock: Return the cinema hall when findById is called
+        when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.of(cinemaHall));
+// Mock the repository save method
+        when(cinemaHallRepository.save(any(CinemaHall.class))).thenReturn(cinemaHall);
 
-        // Act
+// Act
         CinemaHall updatedCinemaHall = cinemaHallService.addSeatsToCinemaHall(cinemaHallId, createSeatRequests);
 
-        // Assert
+// Assert
         assertEquals(cinemaHallId, updatedCinemaHall.getId());
         assertEquals(createSeatRequests.size(), updatedCinemaHall.getSeats().size());
         verify(cinemaHallRepository, times(1)).save(any(CinemaHall.class));
+
     }
 
     @Test
     @Order(5)
     void test_AddSeatsToCinemaHall_WhenCinemaHallDoesNotExist_ThenExceptionIsThrown() {
         // Arrange
-        Long cinemaHallId = 1L;
-        List<CreateSeatRequest> createSeatRequests = new ArrayList<>();
-        createSeatRequests.add(new CreateSeatRequest('A', 1, 10, 10, true));
-        List<CinemaHall> cinemaHallList = new ArrayList<>();
+        Long cinemaHallId = 2L;
+        CreateSeatRequest createSeatRequest = new CreateSeatRequest('A', 1, 10, 10, true);
 
-        // Mock
-        when(cinemaHallRepository.findAll()).thenReturn(Collections.emptyList());
+// Mock - Simulate that the cinema hall with the provided ID is not found
+        when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.empty());
 
-        // Act and Assert
-        assertThrows(ResponseStatusException.class, () -> cinemaHallService.addSeatsToCinemaHall(cinemaHallId, createSeatRequests));
+// Act and Assert
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> cinemaHallService.addSeatsToCinemaHall(cinemaHallId, List.of(createSeatRequest)));
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+
     }
 
     @Test
@@ -163,21 +161,22 @@ public class CinemaHallServiceTest {
         String newName = "Updated Cinema Hall Name";
         List<CreateSeatRequest> newSeatRequests = new ArrayList<>();
 
-        // Mock behavior to return a cinema hall with seats when getCinemaHallById is called
+// Mock behavior to return a cinema hall with seats when getCinemaHallById is called
         CinemaHall existingCinemaHall = new CinemaHall(cinemaHallId, "Cinema Hall Name", null, null);
         List<Seat> oldSeats = new ArrayList<>();
         existingCinemaHall.setSeats(oldSeats);
-        List<CinemaHall> cinemaHallList = new ArrayList<>();
-        cinemaHallList.add(existingCinemaHall);
-        when(cinemaHallRepository.findAll()).thenReturn(cinemaHallList);
 
-        // Act
+// Mock the repository behavior
+        when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.of(existingCinemaHall));
+
+// Act
         CinemaHall updatedCinemaHall = cinemaHallService.updateSeatsOfCinemaHall(cinemaHallId, newName, newSeatRequests);
 
-        // Assert
+// Assert
         verify(seatRepository, times(oldSeats.size())).delete(any(Seat.class));
         verify(seatRepository, times(newSeatRequests.size())).save(any(Seat.class));
         assertEquals(newName, updatedCinemaHall.getName());
+
     }
 
     @Test

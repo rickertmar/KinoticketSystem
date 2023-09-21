@@ -17,6 +17,7 @@ public class Showing {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     private double seatPrice;
 
     @ManyToOne(fetch = FetchType.LAZY)

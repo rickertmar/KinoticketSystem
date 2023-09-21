@@ -17,5 +17,6 @@ public class CreateShowingRequest {
     private String showingExtras;
     private Long movieId;
     private Long cinemaHallId;
+    private double seatPrice;
 
 }

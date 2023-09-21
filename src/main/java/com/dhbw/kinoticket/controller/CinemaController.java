@@ -202,6 +202,7 @@ public class CinemaController {
     }
 
     // Create movie entity and add it to the cinema
+    @PreAuthorize("hasAuthority('admin:create')")
     @PostMapping(value = "/{cinemaId}/movies")
     public ResponseEntity<?> addMovieToCinema(@PathVariable Long cinemaId,
                                               @RequestBody Movie movie) {
@@ -213,6 +214,7 @@ public class CinemaController {
     }
 
     // Delete movie by id and remove from associated cinema
+    @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping(value = "/{cinemaId}/movies/{movieId}")
     public ResponseEntity<?> removeMovieById(@PathVariable Long movieId) {
         try {
@@ -233,6 +235,9 @@ Create Cinema json format
     "country": "Germany",
     "postcode": "58368"
 }
+
+Create CinemaHall -> Text format
+TestCinemaHallName
 
 Add Seats to CinemaHall
 [

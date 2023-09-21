@@ -105,8 +105,8 @@ public class CinemaService {
             Long oldLocationId = cinema.getLocationAddress().getId();
             locationAddressRepository.deleteById(oldLocationId);
             cinema.setLocationAddress(locationAddress);
-
-            return cinemaRepository.save(cinema);
+            cinemaRepository.save(cinema);
+            return cinema;
         }catch (Exception e){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "CINEMA_NOT_FOUND");
         }

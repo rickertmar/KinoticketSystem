@@ -114,6 +114,6 @@ public class CinemaHallService {
 
     // Test if CinemaHall exists
     public boolean doesCinemaHallExist(Long cinemaHallId) {
-        return cinemaRepository.existsById(cinemaHallId);
+        return cinemaHallRepository.existsById(cinemaHallId);
     }
 }

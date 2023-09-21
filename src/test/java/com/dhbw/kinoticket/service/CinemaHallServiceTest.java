@@ -269,7 +269,7 @@ public class CinemaHallServiceTest {
         Long cinemaHallId = 1L;
 
         // Mock
-        when(cinemaRepository.existsById(cinemaHallId)).thenReturn(true);
+        when(cinemaHallRepository.existsById(cinemaHallId)).thenReturn(true);
 
         // Act
         boolean doesExist = cinemaHallService.doesCinemaHallExist(cinemaHallId);

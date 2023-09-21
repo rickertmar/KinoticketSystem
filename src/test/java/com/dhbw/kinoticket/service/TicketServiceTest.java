@@ -1,20 +1,20 @@
 package com.dhbw.kinoticket.service;
 
+import com.dhbw.kinoticket.entity.Discount;
+import com.dhbw.kinoticket.entity.Reservation;
+import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.entity.Ticket;
 import com.dhbw.kinoticket.repository.TicketRepository;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -31,8 +31,8 @@ public class TicketServiceTest {
 
     @BeforeEach
     public void setUp() {
-        Ticket ticket1 = new Ticket(1L, null, null, 12.70, false, false, null, null);
-        Ticket ticket2 = new Ticket(2L, null, null, 9.70, true, false, null, null);
+        Ticket ticket1 = new Ticket(1L, null, Discount.REGULAR, true, null);
+        Ticket ticket2 = new Ticket(2L, null, Discount.CHILD, true, null);
         ticketList = Arrays.asList(ticket1, ticket2);
     }
 
@@ -76,5 +76,38 @@ public class TicketServiceTest {
         // Act & Assert
         Exception exception = assertThrows(IllegalArgumentException.class, () -> ticketService.getTicketById(3L));
         assertEquals("Ticket not found with ID: 3", exception.getMessage());
+    }
+
+    @Test
+    @Order(4)
+    public void test_CreateTicket_WhenValidInputs_ThenReturnTicket() {
+        // Arrange
+        Discount discount = Discount.REGULAR;
+        Reservation reservation = new Reservation();
+        Seat seat = new Seat();
+        seat.setBlocked(true);
+
+        // Act
+        Ticket actualTicket = ticketService.createTicket(discount, reservation, seat);
+
+        // Assert
+        assertEquals(discount, actualTicket.getDiscount());
+        assertEquals(reservation, actualTicket.getReservation());
+        assertEquals(seat, actualTicket.getSeat());
+    }
+
+    @Test
+    @Order(5)
+    public void test_CreateTicket_WhenAnyInputs_ThenIsValidTrue() {
+        // Arrange
+        Discount discount = Discount.REGULAR;
+        Reservation reservation = new Reservation();
+        Seat seat = new Seat();
+
+        // Act
+        Ticket actualTicket = ticketService.createTicket(discount, reservation, seat);
+
+        // Assert
+        assertTrue(actualTicket.isValid());
     }
 }

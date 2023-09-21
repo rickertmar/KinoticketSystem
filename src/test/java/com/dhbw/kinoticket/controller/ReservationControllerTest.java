@@ -88,8 +88,9 @@ class ReservationControllerTest {
         // Arrange
         CreateReservationRequest request = CreateReservationRequest.builder()
                 .selectedSeatIdList(List.of(1L, 2L))
-                .discountList(List.of(Discount.STUDENT, Discount.CHILD))
-                .isPaid(true)
+                .studentDiscounts(1)
+                .childDiscounts(1)
+                .noDiscounts(0)
                 .showingId(1L)
                 .build();
 

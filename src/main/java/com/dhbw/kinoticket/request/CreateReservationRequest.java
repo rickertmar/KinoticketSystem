@@ -1,6 +1,5 @@
 package com.dhbw.kinoticket.request;
 
-import com.dhbw.kinoticket.entity.Discount;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,8 +14,9 @@ import java.util.List;
 public class CreateReservationRequest {
 
     private List<Long> selectedSeatIdList;
-    private List<Discount> discountList;
-    private boolean isPaid;
+    private int studentDiscounts;
+    private int childDiscounts;
+    private int noDiscounts;
     private Long showingId;
 
 }

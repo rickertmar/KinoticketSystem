@@ -105,10 +105,11 @@ public class ReservationServiceTest {
     public void test_CreateReservation_WhenValidRequestAndUser_ThenReturnReservationResponse() {
         // Arrange
         CreateReservationRequest request = new CreateReservationRequest();
-        request.setShowingId(1L);
         request.setSelectedSeatIdList(List.of(1L, 2L));
-        request.setDiscountList(List.of(Discount.STUDENT, Discount.CHILD));
-        request.setPaid(true);
+        request.setChildDiscounts(1);
+        request.setStudentDiscounts(1);
+        request.setNoDiscounts(0);
+        request.setShowingId(1L);
 
         User user = new User();
 
@@ -153,8 +154,8 @@ public class ReservationServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(showing.getMovie().getTitle(), result.getMovie().getTitle());
-        assertEquals(tickets, result.getTickets());  // fix createReservation creating each ticket twice
-        assertEquals(reservation.getTotal(), result.getTotal());// fix createReservation creating each ticket twice
+        assertEquals(tickets, result.getTickets());
+        assertEquals(reservation.getTotal(), result.getTotal());
     }
 
     @Test
@@ -233,10 +234,11 @@ public class ReservationServiceTest {
     public void test_CreateReservation_WhenSeatNotFound_ThenThrowException() {
         // Arrange
         CreateReservationRequest request = new CreateReservationRequest();
-        request.setShowingId(1L);
         request.setSelectedSeatIdList(List.of(1L, 2L));
-        request.setDiscountList(List.of(Discount.STUDENT, Discount.CHILD));
-        request.setPaid(true);
+        request.setChildDiscounts(1);
+        request.setStudentDiscounts(1);
+        request.setNoDiscounts(0);
+        request.setShowingId(1L);
 
         User user = new User();
 

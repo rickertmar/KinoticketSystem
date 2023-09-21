@@ -29,9 +29,10 @@ public class ReservationService {
         return convertToWorkerResponse(reservation);
     }
 
+
     // Booking: Create reservation and tickets
     @Transactional
-    public ReservationResponse createReservation(CreateReservationRequest request, User user) { // TODO prevent from creating single tickets twice
+    public ReservationResponse createReservation(CreateReservationRequest request, User user) {
         // Initialize reservation with user
         Reservation reservation = Reservation.builder()
                 .user(user)
@@ -45,15 +46,32 @@ public class ReservationService {
         // Iterate through requested seat IDs
         List<Seat> seats = showing.getCinemaHall().getSeats(); // TODO change to (free)SeatsList of showing
         List<Long> selectedSeatIdList = request.getSelectedSeatIdList();
-        List<Discount> discountList = request.getDiscountList();
+        int studentDiscounts = request.getStudentDiscounts();
+        int childDiscounts = request.getChildDiscounts();
+        int noDiscounts = request.getNoDiscounts();
+
         for (int i = 0; i < selectedSeatIdList.size(); i++) {
             Long seatId = selectedSeatIdList.get(i);
+
+            // Disount handling per seat/ticket
+            Discount discount = null;
+            if (noDiscounts > 0) {
+                discount = Discount.REGULAR;
+                noDiscounts -= 1;
+            } else if (childDiscounts > 0) {
+                discount = Discount.CHILD;
+                childDiscounts -= 1;
+            } else if (studentDiscounts > 0) {
+                discount = Discount.STUDENT;
+                studentDiscounts -= 1;
+            }
+
             boolean seatFound = false;
             for (Seat seat : seats) {
                 if (seat.getId().equals(seatId)) {
                     seatFound = true;
-                    Discount discount = discountList.get(i);
-                    // Create a ticket for each seat with the corresponding discount
+
+                    // Create a ticket for each seat
                     Ticket ticket = ticketService.createTicket(discount, reservation, seat);
                     reservation.getTickets().add(ticket);
                     break; // Break out of the inner loop once a matching seat is found
@@ -95,6 +113,17 @@ public class ReservationService {
                 .total(total)
                 .build();
     }
+
+/*
+CreateReservationRequest:
+{
+  "selectedSeatIdList": [1, 2],     // IDs of selected seats in a list
+  "studentDiscounts": 1,            // Number of student discounts
+  "childDiscounts": 1,                 // Number of child discounts
+  "noDiscounts": 0,                    // Number of no discounts/regulars
+  "showingId": 102                    // ID of the showing
+}
+*/
 
 
     private MovieResponse convertToMovieDTO(Movie movie) {

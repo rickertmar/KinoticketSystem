@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @Service
@@ -44,14 +45,14 @@ public class ReservationService {
         reservation.setShowing(showing);
 
         // Iterate through requested seat IDs
-        List<Seat> seats = showing.getCinemaHall().getSeats(); // TODO change to (free)SeatsList of showing
+        Set<Seat> seatsSet = showing.getSeats();
+        List<Seat> seats = new ArrayList<>(seatsSet);
         List<Long> selectedSeatIdList = request.getSelectedSeatIdList();
         int studentDiscounts = request.getStudentDiscounts();
         int childDiscounts = request.getChildDiscounts();
         int noDiscounts = request.getNoDiscounts();
 
-        for (int i = 0; i < selectedSeatIdList.size(); i++) {
-            Long seatId = selectedSeatIdList.get(i);
+        for (Long seatId : selectedSeatIdList) {
 
             // Disount handling per seat/ticket
             Discount discount = null;
@@ -152,9 +153,9 @@ CreateReservationRequest:
                 .id(reservation.getId())
                 .total(reservation.getTotal())
                 .isPaid(reservation.isPaid())
-                .userName(null) // TODO Logic missing
-                .movieStart(null) // TODO Logic missing
-                .movieName(null) // TODO Logic missing
+                .userName(reservation.getUser().getEmail())
+                .movieStart(reservation.getShowing().getTime())
+                .movieName(reservation.getShowing().getMovie().getTitle())
                 .tickets(reservation.getTickets())
                 .build();
     }

@@ -68,7 +68,7 @@ public class ShowingService {
                     .build();
             copiedSeats.add(copiedSeat);
         }
-        showing.setFreeSeats(copiedSeats);
+        showing.setSeats(copiedSeats);
 
         return showingRepository.save(showing);
     }

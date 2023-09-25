@@ -59,8 +59,8 @@ class ShowingControllerTest {
     void test_GetAllShowings_ShouldReturnAllShowings() throws Exception {
         // Arrange
         List<Showing> showings = new ArrayList<>();
-        showings.add(new Showing(1L, 12.70, null, null, "3D", null, null, null));
-        showings.add(new Showing(2L, 9.70, null, null, "2D", null, null, null));
+        showings.add(new Showing(1L, 12.70, null, null, "3D", null, null));
+        showings.add(new Showing(2L, 9.70, null, null, "2D", null, null));
 
         // Mock
         when(showingService.getAllShowings()).thenReturn(showings);
@@ -78,7 +78,7 @@ class ShowingControllerTest {
     void test_GetShowingById_ShouldReturnShowingById() throws Exception {
         // Arrange
         Long showingId = 1L;
-        Showing showing = new Showing(showingId, 12.70, null, null, "3D", null, null, null);
+        Showing showing = new Showing(showingId, 12.70, null, null, "3D", null, null);
 
         // Mock
         when(showingService.getShowingById(showingId)).thenReturn(showing);
@@ -100,7 +100,7 @@ class ShowingControllerTest {
         request.setCinemaHallId(1L);
         request.setTime(null);
         request.setShowingExtras("3D");
-        Showing showing = new Showing(1L, 12.70, null, null, "3D", null, null, null);
+        Showing showing = new Showing(1L, 12.70, null, null, "3D", null, null);
 
         when(showingService.doesMovieExist(request.getMovieId())).thenReturn(true);
         when(cinemaHallService.doesCinemaHallExist(request.getCinemaHallId())).thenReturn(true);
@@ -122,7 +122,7 @@ class ShowingControllerTest {
         CreateShowingRequest request = new CreateShowingRequest();
         request.setMovieId(1L);
         request.setCinemaHallId(1L);
-        Showing showing = new Showing(1L, 12.70, null, null, "3D", null, null, null);
+        Showing showing = new Showing(1L, 12.70, null, null, "3D", null, null);
 
         // Mock
         when(showingService.updateShowing(id, request)).thenReturn(showing);

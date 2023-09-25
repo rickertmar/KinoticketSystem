@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -43,6 +44,8 @@ public class ReservationServiceTest {
         Long id = 1L;
         Reservation reservation1 = new Reservation();
         reservation1.setId(id);
+        reservation1.setUser(User.builder().id(1L).email("test@test.dev").build());
+        reservation1.setShowing(Showing.builder().id(1L).time(LocalDateTime.now()).movie(Movie.builder().title("Test movie").build()).build());
 
         // Mock
         when(reservationRepository.findById(id)).thenReturn(Optional.of(reservation1));
@@ -89,6 +92,8 @@ public class ReservationServiceTest {
         reservation.setId(1L);
         reservation.setTotal(100.0);
         reservation.setPaid(true);
+        reservation.setUser(User.builder().id(1L).email("test@test.dev").build());
+        reservation.setShowing(Showing.builder().id(1L).time(LocalDateTime.now()).movie(Movie.builder().title("Test movie").build()).build());
 
         // Act
         var result = reservationService.convertToWorkerResponse(reservation);
@@ -121,16 +126,15 @@ public class ReservationServiceTest {
         seat1.setId(1L);
         Seat seat2 = new Seat();
         seat2.setId(2L);
-        List<Seat> seatList = Arrays.asList(seat1, seat2);
-
-        CinemaHall cinemaHall = new CinemaHall();
-        cinemaHall.setSeats(seatList);
+        Set<Seat> seatsSet = new HashSet<>();
+        seatsSet.add(seat1);
+        seatsSet.add(seat2);
 
         Movie movie = new Movie(1L, "Movie title", FSK.FSK16, "Movie description", 2023, "Horror", "Director", 2, "1h 20min", "USA", "src", "Actors", null);
 
         Showing showing = new Showing();
         showing.setSeatPrice(5.0);
-        showing.setCinemaHall(cinemaHall);
+        showing.setSeats(seatsSet);
         showing.setMovie(movie);
 
         List<Ticket> tickets = new ArrayList<>();
@@ -173,17 +177,15 @@ public class ReservationServiceTest {
         seat1.setId(1L);
         Seat seat2 = new Seat();
         seat2.setId(2L);
-        List<Seat> seatList = Arrays.asList(seat1, seat2);
-
-        CinemaHall cinemaHall = new CinemaHall();
-        cinemaHall.setId(1L);
-        cinemaHall.setSeats(seatList);
+        Set<Seat> seatsSet = new HashSet<>();
+        seatsSet.add(seat1);
+        seatsSet.add(seat2);
 
         Movie movie = new Movie(1L, "Movie title", FSK.FSK16, "Movie description", 2023, "Horror", "Director", 2, "1h 20min", "USA", "src", "Actors", null);
 
         Showing showing = new Showing();
         showing.setSeatPrice(5.0);
-        showing.setCinemaHall(cinemaHall);
+        showing.setSeats(seatsSet);
         showing.setMovie(movie);
 
         when(showingService.getShowingById(request.getShowingId())).thenReturn(showing);
@@ -248,14 +250,11 @@ public class ReservationServiceTest {
         Seat seat1 = new Seat();
         seat1.setId(1L);
 
-        List<Seat> seats = new ArrayList<>(); // Empty seats list
-
-        CinemaHall cinemaHall = new CinemaHall();
-        cinemaHall.setSeats(seats);
+        Set<Seat> seats = new HashSet<>(); // Empty seats set
 
         Showing showing = new Showing();
         showing.setSeatPrice(5.0);
-        showing.setCinemaHall(cinemaHall);
+        showing.setSeats(seats);
 
         when(showingService.getShowingById(request.getShowingId())).thenReturn(showing);
 

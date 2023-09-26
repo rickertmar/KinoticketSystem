@@ -7,6 +7,8 @@ import com.dhbw.kinoticket.entity.Showing;
 import com.dhbw.kinoticket.repository.MovieRepository;
 import com.dhbw.kinoticket.repository.ShowingRepository;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
+import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -17,6 +19,7 @@ import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -98,6 +101,62 @@ public class ShowingServiceTest {
 
     @Test
     @Order(4)
+    public void test_GetSeatsOfShowing_WhenShowingIdIsValid_ThenReturnsCorrectSeats() {
+        // Create a mock Showing object
+        Showing showing = new Showing();
+        showing.setId(1L);
+
+        // Create mock Seat objects
+        Seat seat1 = new Seat();
+        seat1.setBlocked(true);
+        seat1.setPermanentBlocked(false);
+        seat1.setBlockedAtTimestamp(LocalDateTime.now().minusMinutes(20)); // Expired blocking
+
+        Seat seat2 = new Seat();
+        seat2.setBlocked(true);
+        seat2.setPermanentBlocked(true); // Permanent blocking
+
+        Set<Seat> seats = new HashSet<>();
+        seats.add(seat1);
+        seats.add(seat2);
+
+        showing.setSeats(seats);
+
+        // Mock the behavior of the showingRepository.findById() method
+        when(showingRepository.findById(1L)).thenReturn(Optional.of(showing));
+
+        // Call the method under test
+        Set<Seat> result = showingService.getSeatsOfShowing(1L);
+
+        // Verify that the seat blocking status is updated correctly
+        for (Seat seat : result) {
+            if (seat.isBlockingExpired() && !seat.isPermanentBlocked()) {
+                seat.setBlocked(false);
+                seat.setBlockedAtTimestamp(null);
+            }
+        }
+
+        // Verify that the showingRepository.save() method is called
+        verify(showingRepository, times(1)).save(showing);
+
+        // Assert the returned seats
+        assertEquals(seats, result);
+        assertFalse(seat1.isBlocked());
+        assertNull(seat1.getBlockedAtTimestamp());
+    }
+
+    @Test
+    @Order(5)
+    public void test_GetSeatsOfShowing_WhenShowingIdDoesNotExist_ThenThrowsIllegalArgumentException() {
+        // Mock the behavior of the showingRepository.findById() method to return an empty Optional
+        when(showingRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // Call the method under test
+        assertThrows(IllegalArgumentException.class, () -> showingService.getSeatsOfShowing(1L));
+    }
+
+    @Test
+    @Order(6)
     public void test_CreateShowing_WhenRequestIsValid_ThenReturnsShowing() {
         // Arrange
         CreateShowingRequest request = new CreateShowingRequest();
@@ -123,7 +182,7 @@ public class ShowingServiceTest {
     }
 
     @Test
-    @Order(5)
+    @Order(7)
     public void test_UpdateShowing_WhenValidRequest_ThenShowingUpdated() {
         // Arrange
         CreateShowingRequest request = CreateShowingRequest.builder()
@@ -160,7 +219,7 @@ public class ShowingServiceTest {
     }
 
     @Test
-    @Order(6)
+    @Order(8)
     public void test_UpdateShowing_WhenShowingDoesNotExist_ThenExceptionThrown() {
         // Arrange
         CreateShowingRequest request = CreateShowingRequest.builder()
@@ -181,7 +240,7 @@ public class ShowingServiceTest {
     }
 
     @Test
-    @Order(7)
+    @Order(9)
     public void test_DeleteShowing_WhenShowingExists_ThenDeleteIsCalled() {
         // Arrange
         Long id = 1L;
@@ -197,7 +256,7 @@ public class ShowingServiceTest {
     }
 
     @Test
-    @Order(8)
+    @Order(10)
     public void test_DeleteShowing_WhenShowingDoesNotExist_ThenExceptionIsThrown() {
         // Arrange
         Long id = 1L;
@@ -213,7 +272,7 @@ public class ShowingServiceTest {
     }
 
     @Test
-    @Order(9)
+    @Order(11)
     public void test_GetSeatsOfCinemaHall_WhenCinemaHallHasSeats_ThenReturnSetOfSeats() {
         // Arrange
         CinemaHall cinemaHall = new CinemaHall();
@@ -249,7 +308,7 @@ public class ShowingServiceTest {
     }
 
     @Test
-    @Order(10)
+    @Order(12)
     public void test_GetSeatsOfCinemaHall_WhenCinemaHallHasNoSeats_ThenReturnEmptySet() {
         // Arrange
         Long id = 1L;
@@ -266,7 +325,7 @@ public class ShowingServiceTest {
     }
 
     @Test
-    @Order(11)
+    @Order(13)
     public void test_DoesMovieExist_WhenMovieIdExists_ThenReturnTrue() {
         // Arrange
         Long id = 1L;
@@ -281,7 +340,7 @@ public class ShowingServiceTest {
     }
 
     @Test
-    @Order(12)
+    @Order(14)
     public void test_DoesMovieExist_WhenMovieIdDoesNotExist_ThenReturnFalse() {
         // Arrange
         Long id = 1L;
@@ -293,5 +352,139 @@ public class ShowingServiceTest {
         // Assert
         verify(movieRepository, times(1)).existsById(id);
         assertThat(doesExist).isFalse();
+    }
+
+    @Test
+    @Order(15)
+    public void test_BlockSeatsOfShowing() {
+        // Create a mock Showing object
+        Showing showing = new Showing();
+        showing.setId(1L);
+
+        // Create mock Seat objects
+        Seat seat1 = new Seat();
+        seat1.setId(1L);
+        seat1.setBlocked(false);
+        seat1.setBlockedAtTimestamp(null);
+
+        Seat seat2 = new Seat();
+        seat2.setId(2L);
+        seat2.setBlocked(false);
+        seat2.setBlockedAtTimestamp(null);
+
+        Set<Seat> seats = new HashSet<>();
+        seats.add(seat1);
+        seats.add(seat2);
+
+        showing.setSeats(seats);
+
+        // Create a mock UpdateSeatStatusRequest object
+        UpdateSeatStatusRequest request = new UpdateSeatStatusRequest();
+        request.setShowingId(1L);
+        request.setSeatIds(Arrays.asList(1L, 2L));
+
+        // Mock the behavior of the showingService.getShowingById() method
+        when(showingRepository.findById(1L)).thenReturn(Optional.of(showing));
+
+        // Call the method under test
+        Set<Seat> result = showingService.blockSeatsOfShowing(request);
+
+        // Verify that the seat blocking status is updated correctly
+        for (Seat seat : result) {
+            if (request.getSeatIds().contains(seat.getId())) {
+                assertTrue(seat.isBlocked());
+                assertNotNull(seat.getBlockedAtTimestamp());
+            } else {
+                assertFalse(seat.isBlocked());
+                assertNull(seat.getBlockedAtTimestamp());
+            }
+        }
+
+        // Verify that the showingRepository.save() method is called
+        verify(showingRepository, times(1)).save(showing);
+
+        // Assert the returned seats
+        assertEquals(seats, result);
+    }
+
+    @Test
+    @Order(16)
+    public void test_BlockSeatsOfShowing_InvalidShowingId() {
+        // Create a mock UpdateSeatStatusRequest object
+        UpdateSeatStatusRequest request = new UpdateSeatStatusRequest();
+        request.setShowingId(1L);
+        request.setSeatIds(Arrays.asList(1L, 2L));
+
+        // Mock the behavior of the showingService.getShowingById() method to throw an exception
+        when(showingRepository.findById(1L)).thenThrow(new EntityNotFoundException());
+
+        // Call the method under test and assert the exception
+        assertThrows(EntityNotFoundException.class, () -> showingService.blockSeatsOfShowing(request));
+    }
+
+    @Test
+    public void test_UnblockSeatsOfShowing() {
+        // Create a mock Showing object
+        Showing showing = new Showing();
+        showing.setId(1L);
+
+        // Create mock Seat objects
+        Seat seat1 = new Seat();
+        seat1.setId(1L);
+        seat1.setBlocked(true);
+        seat1.setBlockedAtTimestamp(LocalDateTime.now());
+
+        Seat seat2 = new Seat();
+        seat2.setId(2L);
+        seat2.setBlocked(true);
+        seat2.setBlockedAtTimestamp(LocalDateTime.now());
+
+        Set<Seat> seats = new HashSet<>();
+        seats.add(seat1);
+        seats.add(seat2);
+
+        showing.setSeats(seats);
+
+        // Create a mock UpdateSeatStatusRequest object
+        UpdateSeatStatusRequest request = new UpdateSeatStatusRequest();
+        request.setShowingId(1L);
+        request.setSeatIds(Arrays.asList(1L, 2L));
+
+        // Mock the behavior of the showingService.getShowingById() method
+        when(showingRepository.findById(1L)).thenReturn(Optional.of(showing));
+
+        // Call the method under test
+        Set<Seat> result = showingService.unblockSeatsOfShowing(request);
+
+        // Verify that the seat blocking status is updated correctly
+        for (Seat seat : result) {
+            if (request.getSeatIds().contains(seat.getId())) {
+                assertFalse(seat.isBlocked());
+                assertNull(seat.getBlockedAtTimestamp());
+            } else {
+                assertTrue(seat.isBlocked());
+                assertNotNull(seat.getBlockedAtTimestamp());
+            }
+        }
+
+        // Verify that the showingRepository.save() method is called
+        verify(showingRepository, times(1)).save(showing);
+
+        // Assert the returned seats
+        assertEquals(seats, result);
+    }
+
+    @Test
+    public void testUnblockSeatsOfShowing_InvalidShowingId() {
+        // Create a mock UpdateSeatStatusRequest object
+        UpdateSeatStatusRequest request = new UpdateSeatStatusRequest();
+        request.setShowingId(1L);
+        request.setSeatIds(Arrays.asList(1L, 2L));
+
+        // Mock the behavior of the showingService.getShowingById() method to throw an exception
+        when(showingRepository.findById(1L)).thenThrow(new EntityNotFoundException());
+
+        // Call the method under test and assert the exception
+        assertThrows(EntityNotFoundException.class, () -> showingService.unblockSeatsOfShowing(request));
     }
 }

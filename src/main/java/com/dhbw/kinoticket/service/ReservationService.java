@@ -2,7 +2,9 @@ package com.dhbw.kinoticket.service;
 
 import com.dhbw.kinoticket.entity.*;
 import com.dhbw.kinoticket.repository.ReservationRepository;
+import com.dhbw.kinoticket.repository.ShowingRepository;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import com.dhbw.kinoticket.response.MovieResponse;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +24,7 @@ import java.util.Set;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ShowingRepository showingRepository;
     private final ShowingService showingService;
     private final TicketService ticketService;
 
@@ -45,8 +49,7 @@ public class ReservationService {
         reservation.setShowing(showing);
 
         // Iterate through requested seat IDs
-        Set<Seat> seatsSet = showing.getSeats();
-        List<Seat> seats = new ArrayList<>(seatsSet);
+        Set<Seat> seats = showing.getSeats();
         List<Long> selectedSeatIdList = request.getSelectedSeatIdList();
         int studentDiscounts = request.getStudentDiscounts();
         int childDiscounts = request.getChildDiscounts();
@@ -54,7 +57,7 @@ public class ReservationService {
 
         for (Long seatId : selectedSeatIdList) {
 
-            // Disount handling per seat/ticket
+            // Discount handling per seat/ticket
             Discount discount = null;
             if (noDiscounts > 0) {
                 discount = Discount.REGULAR;
@@ -72,9 +75,18 @@ public class ReservationService {
                 if (seat.getId().equals(seatId)) {
                     seatFound = true;
 
+                    // Check if the seat is still/already blocked
+                    if (seat.isPermanentBlocked() || seat.isBlockingExpired()) {
+                        throw new IllegalArgumentException("Seat is no longer available for booking: " + seatId);
+                    }
+
                     // Create a ticket for each seat
                     Ticket ticket = ticketService.createTicket(discount, reservation, seat);
                     reservation.getTickets().add(ticket);
+
+                    // Change status of seat to blocked
+                    seat.setPermanentBlocked(true);
+
                     break; // Break out of the inner loop once a matching seat is found
                 }
             }
@@ -84,19 +96,12 @@ public class ReservationService {
             }
         }
 
+        // Save/Update showing to update the status of booked seats to permanent blocked
+        showingRepository.save(showing);
+
         // Calculate and set the total price for the reservation
-        double total = 0.0;
         List<Ticket> ticketList = reservation.getTickets();
-        for (Ticket ticket : ticketList) {
-            if (ticket.getDiscount().equals(Discount.STUDENT)) {
-                total += (showing.getSeatPrice() - 2.0);
-            } else if (ticket.getDiscount().equals(Discount.CHILD)) {
-                total += (showing.getSeatPrice() - 3.0);
-            } else {
-                // Regular price
-                total += showing.getSeatPrice();
-            }
-        }
+        double total = calculateTotalPrice(showing, ticketList);
         reservation.setTotal(total);
 
         // Mark reservation as paid and save it
@@ -115,19 +120,22 @@ public class ReservationService {
                 .build();
     }
 
-/*
-CreateReservationRequest:
-{
-  "selectedSeatIdList": [1, 2],     // IDs of selected seats in a list
-  "studentDiscounts": 1,            // Number of student discounts
-  "childDiscounts": 1,                 // Number of child discounts
-  "noDiscounts": 0,                    // Number of no discounts/regulars
-  "showingId": 102                    // ID of the showing
-}
-*/
+    double calculateTotalPrice(Showing showing, List<Ticket> tickets) {
+        double total = 0.0;
+        for (Ticket ticket : tickets) {
+            if (ticket.getDiscount().equals(Discount.STUDENT)) {
+                total += (showing.getSeatPrice() - 2.0);
+            } else if (ticket.getDiscount().equals(Discount.CHILD)) {
+                total += (showing.getSeatPrice() - 3.0);
+            } else {
+                // Regular price
+                total += showing.getSeatPrice();
+            }
+        }
+        return total;
+    }
 
-
-    private MovieResponse convertToMovieDTO(Movie movie) {
+    MovieResponse convertToMovieDTO(Movie movie) {
         return MovieResponse.builder()
                 .id(movie.getId())
                 .title(movie.getTitle())
@@ -143,6 +151,17 @@ CreateReservationRequest:
                 .actors(movie.getActors())
                 .build();
     }
+
+/*
+CreateReservationRequest:
+{
+  "selectedSeatIdList": [1, 2],     // IDs of selected seats in a list
+  "studentDiscounts": 1,            // Number of student discounts
+  "childDiscounts": 1,              // Number of child discounts
+  "noDiscounts": 0,                 // Number of no discounts/regulars
+  "showingId": 102                  // ID of the showing
+}
+*/
 
     public WorkerReservationResponse convertToWorkerResponse(Reservation reservation) {
         if (reservation == null) {

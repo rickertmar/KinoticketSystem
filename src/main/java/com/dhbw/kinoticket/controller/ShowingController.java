@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.controller;
 
+import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
 import com.dhbw.kinoticket.service.CinemaHallService;
 import com.dhbw.kinoticket.service.ShowingService;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,6 +41,19 @@ public class ShowingController {
             return new ResponseEntity<>(showingService.getShowingById(id), HttpStatus.FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Get seats of showing
+    @GetMapping(value = "/{id}/getSeats")
+    public ResponseEntity<?> getSeatsOfShowing(@PathVariable Long id) {
+        try {
+            Set<Seat> seats = showingService.getSeatsOfShowing(id);
+            return new ResponseEntity<>(seats, HttpStatus.FOUND);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

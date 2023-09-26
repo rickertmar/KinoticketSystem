@@ -7,6 +7,7 @@ import com.dhbw.kinoticket.entity.Showing;
 import com.dhbw.kinoticket.repository.MovieRepository;
 import com.dhbw.kinoticket.repository.ShowingRepository;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
+import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +43,25 @@ public class ShowingService {
     public Showing getShowingById(Long id) {
         return showingRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Showing not found with ID: " + id));
+    }
+
+    // Get seats of showing
+    public Set<Seat> getSeatsOfShowing(Long id) {
+        Showing showing = getShowingById(id);
+
+        // Get the seats of the showing
+        Set<Seat> seats = showing.getSeats();
+
+        // Check and update the seat blocking status
+        for (Seat seat : seats) {
+            if (seat.isBlockingExpired() && !seat.isPermanentBlocked()) {
+                seat.setBlocked(false);
+                seat.setBlockedAtTimestamp(null);
+            }
+        }
+        showingRepository.save(showing);
+
+        return seats;
     }
 
     // Create showing
@@ -89,6 +110,45 @@ public class ShowingService {
     public void deleteShowing(Long id) {
         Showing showing = getShowingById(id);
         showingRepository.delete(showing);
+    }
+
+    public Set<Seat> blockSeatsOfShowing(UpdateSeatStatusRequest request) {
+        // Fetch showing and its seats from repository
+        Showing showing = getShowingById(request.getShowingId());
+        Set<Seat> showingSeats = showing.getSeats();
+
+        // Change status of requested seats to blocked
+        for (Seat seat : showingSeats) {
+            if (request.getSeatIds().contains(seat.getId())) {
+                seat.setBlocked(true);
+                seat.setBlockedAtTimestamp(LocalDateTime.now());
+            }
+        }
+
+        // Save and return
+        showing.setSeats(showingSeats);
+        showingRepository.save(showing);
+        return showingSeats;
+    }
+
+    // Unblock seats of showing
+    public Set<Seat> unblockSeatsOfShowing(UpdateSeatStatusRequest request) {
+        // Fetch showing and its seats from repository
+        Showing showing = getShowingById(request.getShowingId());
+        Set<Seat> showingSeats = showing.getSeats();
+
+        // Change status of requested seats to not blocked
+        for (Seat seat : showingSeats) {
+            if (request.getSeatIds().contains(seat.getId())) {
+                seat.setBlocked(false);
+                seat.setBlockedAtTimestamp(null);
+            }
+        }
+
+        // Save and return
+        showing.setSeats(showingSeats);
+        showingRepository.save(showing);
+        return showingSeats;
     }
 
 

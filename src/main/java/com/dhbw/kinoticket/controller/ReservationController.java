@@ -2,9 +2,11 @@ package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import com.dhbw.kinoticket.service.ReservationService;
+import com.dhbw.kinoticket.service.ShowingService;
 import com.dhbw.kinoticket.service.TicketService;
 import com.dhbw.kinoticket.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +25,7 @@ public class ReservationController {
 
     private final ReservationService reservationService;
     private final UserService userService;
+    private final ShowingService showingService;
     private final TicketService ticketService;
 
     @PreAuthorize("hasAuthority('worker:read')")
@@ -75,11 +78,35 @@ public class ReservationController {
         }
     }
 
+
+    // ----------------------------------------------------------------
+    // Manage status of showing seats for the reservation process
+    // ----------------------------------------------------------------
+
+    // Block seats of showing (in reservation process)
+    @PutMapping(value = "/blockSeats")
+    public ResponseEntity<?> blockSeats(@RequestBody UpdateSeatStatusRequest request) {
+        try {
+            return new ResponseEntity<>(showingService.blockSeatsOfShowing(request), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Unblock seats of showing (in reservation process)
+    @PutMapping(value = "/unblockSeats")
+    public ResponseEntity<?> unblockSeats(@RequestBody UpdateSeatStatusRequest request) {
+        try {
+            return new ResponseEntity<>(showingService.unblockSeatsOfShowing(request), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
 
 
 /*
-
+ReservationRequest:
 {
   "selectedSeatIdList": [1, 2],
   "studentDiscounts": 1,
@@ -134,6 +161,13 @@ ReservationResponse:
         }
     ],
     "total": 5.0
+}
+
+
+Block/Unblock Request:
+{
+    "showingId": 1,
+    "seatIds": [1, 2, 3, 4, 5]
 }
 
 */

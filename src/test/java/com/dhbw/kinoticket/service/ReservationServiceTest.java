@@ -2,7 +2,10 @@ package com.dhbw.kinoticket.service;
 
 import com.dhbw.kinoticket.entity.*;
 import com.dhbw.kinoticket.repository.ReservationRepository;
+import com.dhbw.kinoticket.repository.ShowingRepository;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
+import com.dhbw.kinoticket.response.MovieResponse;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
@@ -24,6 +27,9 @@ public class ReservationServiceTest {
     private ReservationRepository reservationRepository;
 
     @Mock
+    private ShowingRepository showingRepository;
+
+    @Mock
     private ShowingService showingService;
 
     @Mock
@@ -34,7 +40,7 @@ public class ReservationServiceTest {
 
     @BeforeEach
     void setUp() {
-        reservationService = new ReservationService(reservationRepository, showingService, ticketService);
+        reservationService = new ReservationService(reservationRepository, showingRepository, showingService, ticketService);
     }
 
     @Test
@@ -263,4 +269,114 @@ public class ReservationServiceTest {
             reservationService.createReservation(request, user);
         });
     }
+
+    @Test
+    @Order(10)
+    public void test_CalculateTotalPrice_RegularPrice() {
+        // Create a mock Showing object
+        Showing showing = new Showing();
+        showing.setSeatPrice(10.0);
+
+        // Create mock Ticket objects
+        List<Ticket> tickets = new ArrayList<>();
+        Ticket ticket1 = new Ticket();
+        ticket1.setDiscount(Discount.REGULAR);
+        tickets.add(ticket1);
+
+        Ticket ticket2 = new Ticket();
+        ticket2.setDiscount(Discount.REGULAR);
+        tickets.add(ticket2);
+
+        // Call the method under test
+        double totalPrice = reservationService.calculateTotalPrice(showing, tickets);
+
+        // Assert the total price
+        assertEquals(20.0, totalPrice);
+    }
+
+    @Test
+    @Order(11)
+    public void test_CalculateTotalPrice_StudentDiscount() {
+        // Create a mock Showing object
+        Showing showing = new Showing();
+        showing.setSeatPrice(10.0);
+
+        // Create mock Ticket objects
+        List<Ticket> tickets = new ArrayList<>();
+        Ticket ticket1 = new Ticket();
+        ticket1.setDiscount(Discount.STUDENT);
+        tickets.add(ticket1);
+
+        Ticket ticket2 = new Ticket();
+        ticket2.setDiscount(Discount.STUDENT);
+        tickets.add(ticket2);
+
+        // Call the method under test
+        double totalPrice = reservationService.calculateTotalPrice(showing, tickets);
+
+        // Assert the total price
+        assertEquals(16.0, totalPrice);
+    }
+
+    @Test
+    @Order(12)
+    public void test_CalculateTotalPrice_ChildDiscount() {
+        // Create a mock Showing object
+        Showing showing = new Showing();
+        showing.setSeatPrice(10.0);
+
+        // Create mock Ticket objects
+        List<Ticket> tickets = new ArrayList<>();
+        Ticket ticket1 = new Ticket();
+        ticket1.setDiscount(Discount.CHILD);
+        tickets.add(ticket1);
+
+        Ticket ticket2 = new Ticket();
+        ticket2.setDiscount(Discount.CHILD);
+        tickets.add(ticket2);
+
+        // Call the method under test
+        double totalPrice = reservationService.calculateTotalPrice(showing, tickets);
+
+        // Assert the total price
+        assertEquals(14.0, totalPrice);
+    }
+
+    @Test
+    @Order(13)
+    public void test_ConvertToMovieDTO() {
+        // Create a mock Movie object
+        Movie movie = new Movie();
+        movie.setId(1L);
+        movie.setTitle("Test Movie");
+        movie.setFsk(FSK.FSK16);
+        movie.setDescription("Test Description");
+        movie.setReleaseYear(2021);
+        movie.setGenres("Action, Thriller");
+        movie.setDirector("John Doe");
+        movie.setRunningWeek(2);
+        movie.setRuntime("2h 30min");
+        movie.setReleaseCountry("USA");
+        movie.setImageSrc("image.jpg");
+        movie.setActors("Actor 1, Actor 2");
+
+        // Call the method under test
+        MovieResponse result = reservationService.convertToMovieDTO(movie);
+
+        // Assert the MovieResponse object
+        assertNotNull(result);
+        assertEquals(movie.getId(), result.getId());
+        assertEquals(movie.getTitle(), result.getTitle());
+        assertEquals(movie.getFsk(), result.getFsk());
+        assertEquals(movie.getDescription(), result.getDescription());
+        assertEquals(movie.getReleaseYear(), result.getReleaseYear());
+        assertEquals(movie.getGenres(), result.getGenres());
+        assertEquals(movie.getDirector(), result.getDirector());
+        assertEquals(movie.getRunningWeek(), result.getRunningWeek());
+        assertEquals(movie.getRuntime(), result.getRuntime());
+        assertEquals(movie.getReleaseCountry(), result.getReleaseCountry());
+        assertEquals(movie.getImageSrc(), result.getImageSrc());
+        assertEquals(movie.getActors(), result.getActors());
+    }
+
 }

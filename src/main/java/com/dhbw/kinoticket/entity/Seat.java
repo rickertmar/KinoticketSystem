@@ -36,4 +36,14 @@ public class Seat {
     @JoinColumn(name = "hall_id")
     private CinemaHall cinemaHall;
 
+
+    // Check if blocking is expired
+    public boolean isBlockingExpired() {
+        if (blockedAtTimestamp == null) {
+            return false; // Seat is not blocked
+        }
+
+        LocalDateTime expirationTime = blockedAtTimestamp.plusMinutes(15); // Blocking expires after 15 minutes
+        return LocalDateTime.now().isAfter(expirationTime);
+    }
 }

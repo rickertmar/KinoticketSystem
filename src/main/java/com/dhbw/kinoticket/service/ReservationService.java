@@ -123,6 +123,8 @@ public class ReservationService {
                 .build();
     }
 
+
+    // Calculate total of given tickets
     double calculateTotalPrice(Showing showing, List<Ticket> tickets) {
         double total = 0.0;
         for (Ticket ticket : tickets) {
@@ -138,6 +140,7 @@ public class ReservationService {
         return total;
     }
 
+    // Convert movie to movie-response
     MovieResponse convertToMovieDTO(Movie movie) {
         return MovieResponse.builder()
                 .id(movie.getId())
@@ -186,9 +189,12 @@ CreateReservationRequest:
     // Get Reservations of User
     public List<UserReservationResponse> getReservationsByUser (Long userId) {
 
+        // Fetch reservations from repository
         List<Reservation> reservationList = reservationRepository.findAll();
+
         List<Reservation> matchingUserReservationList = new ArrayList<>();
-        // search from the List
+
+        // Search reservations of specific user from the list
         for (Reservation currentReservation:reservationList) {
             if (currentReservation.getUser().getId().equals(userId)) {
                 matchingUserReservationList.add(currentReservation);
@@ -199,10 +205,13 @@ CreateReservationRequest:
         if (matchingUserReservationList.isEmpty()){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No Reservations found");
         }
+
         return convertToUserReservationResponse(matchingUserReservationList);
     }
 
-    private List<UserReservationResponse> convertToUserReservationResponse(List<Reservation> reservations) {
+
+    // Convert list of reservations to list of user-reservation-responses
+    List<UserReservationResponse> convertToUserReservationResponse(List<Reservation> reservations) {
         List<UserReservationResponse> response = new ArrayList<>();
         for (Reservation currentReservation : reservations) {
             var userReservationResponse = UserReservationResponse.builder()

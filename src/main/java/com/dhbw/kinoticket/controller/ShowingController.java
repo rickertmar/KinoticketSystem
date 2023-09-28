@@ -101,3 +101,15 @@ public class ShowingController {
         }
     }
 }
+
+/*
+
+{
+    "time": "2022-12-31T20:00:00",
+    "showingExtras": "3D",
+    "movieId": 1,
+    "cinemaHallId": 1,
+    "seatPrice": 5.0
+}
+
+*/

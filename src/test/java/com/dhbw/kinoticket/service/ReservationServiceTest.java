@@ -4,13 +4,14 @@ import com.dhbw.kinoticket.entity.*;
 import com.dhbw.kinoticket.repository.ReservationRepository;
 import com.dhbw.kinoticket.repository.ShowingRepository;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
-import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import com.dhbw.kinoticket.response.MovieResponse;
 import com.dhbw.kinoticket.response.ReservationResponse;
+import com.dhbw.kinoticket.response.UserReservationResponse;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -72,9 +73,7 @@ public class ReservationServiceTest {
         when(reservationRepository.findById(id)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            reservationService.getWorkerReservationById(id);
-        });
+        assertThrows(IllegalArgumentException.class, () -> reservationService.getWorkerReservationById(id));
     }
 
     @Test
@@ -220,9 +219,7 @@ public class ReservationServiceTest {
         when(showingService.getShowingById(request.getShowingId())).thenThrow(new IllegalArgumentException("Showing not found with ID: " + request.getShowingId()));
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            reservationService.createReservation(request, user);
-        });
+        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(request, user));
     }
 
     @Test
@@ -232,9 +229,7 @@ public class ReservationServiceTest {
         CreateReservationRequest request = new CreateReservationRequest();
 
         // Act & Assert
-        assertThrows(NullPointerException.class, () -> {
-            reservationService.createReservation(request, null);
-        });
+        assertThrows(NullPointerException.class, () -> reservationService.createReservation(request, null));
     }
 
     @Test
@@ -265,9 +260,7 @@ public class ReservationServiceTest {
         when(showingService.getShowingById(request.getShowingId())).thenReturn(showing);
 
         // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            reservationService.createReservation(request, user);
-        });
+        assertThrows(IllegalArgumentException.class, () -> reservationService.createReservation(request, user));
     }
 
     @Test
@@ -379,4 +372,77 @@ public class ReservationServiceTest {
         assertEquals(movie.getActors(), result.getActors());
     }
 
+    @Test
+    @Order(14)
+    public void test_GetReservationsByUser_WhenUserHasReservations_ThenReturnUserReservationResponseList() {
+        // Arrange
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
+        user.setEmail("test@test.dev");
+
+        Reservation reservation1 = new Reservation();
+        reservation1.setId(1L);
+        reservation1.setUser(user);
+        reservation1.setShowing(Showing.builder().id(1L).time(LocalDateTime.now()).movie(Movie.builder().title("Test movie").build()).build());
+
+        Reservation reservation2 = new Reservation();
+        reservation2.setId(2L);
+        reservation2.setUser(user);
+        reservation2.setShowing(Showing.builder().id(2L).time(LocalDateTime.now()).movie(Movie.builder().title("Test movie 2").build()).build());
+
+        List<Reservation> reservationList = List.of(reservation1, reservation2);
+
+        // Mock
+        when(reservationRepository.findAll()).thenReturn(reservationList);
+
+        // Act
+        var result = reservationService.getReservationsByUser(userId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    @Order(15)
+    public void test_GetReservationsByUser_WhenUserHasNoReservations_ThenThrowResponseStatusException() {
+        // Arrange
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
+        user.setEmail("test@test.dev");
+
+        List<Reservation> reservationList = new ArrayList<>();
+
+        // Mock
+        when(reservationRepository.findAll()).thenReturn(reservationList);
+
+        // Act & Assert
+        assertThrows(ResponseStatusException.class, () -> reservationService.getReservationsByUser(userId));
+    }
+
+    @Test
+    @Order(16)
+    public void test_ConvertToUserReservationResponse_WhenReservationsProvided_ThenReturnUserReservationResponses() {
+        // Arrange
+        List<Reservation> reservations = new ArrayList<>();
+        Reservation reservation = new Reservation();
+        reservation.setTotal(100.0);
+        reservation.setUser(User.builder().id(1L).email("test@test.dev").build());
+        reservation.setShowing(Showing.builder().id(1L).time(LocalDateTime.now()).movie(Movie.builder().title("Test movie").build()).build());
+        reservations.add(reservation);
+
+        // Act
+        List<UserReservationResponse> result = reservationService.convertToUserReservationResponse(reservations);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        assertEquals(reservation.getTotal(), result.get(0).getTotal());
+        assertEquals(reservation.getUser().getEmail(), result.get(0).getUserName());
+        assertEquals(reservation.getShowing().getTime(), result.get(0).getShowingStart());
+        assertEquals(reservation.getShowing().getShowingExtras(), result.get(0).getShowingExtras());
+        assertEquals(reservation.getShowing().getMovie().getTitle(), result.get(0).getMovieTitle());
+    }
 }

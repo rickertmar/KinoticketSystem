@@ -43,13 +43,25 @@ public class ReservationController {
     @PostMapping(value = "")
     public ResponseEntity<?> createReservation(HttpServletRequest httpServletRequest,
                                                @RequestBody CreateReservationRequest request) {
-        Principal principal = httpServletRequest.getUserPrincipal();
         try {
+            Principal principal = httpServletRequest.getUserPrincipal();
             User user = userService.getUserByEmail(principal.getName());
             ReservationResponse response = reservationService.createReservation(request, user);
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to create reservation.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Get Reservations of User
+    @GetMapping(value = "/getUserReservations")
+    public ResponseEntity<?> getReservationsByUser(HttpServletRequest httpServletRequest) {
+        try {
+            Principal principal = httpServletRequest.getUserPrincipal();
+            User user = userService.getUserByEmail(principal.getName());
+            return new ResponseEntity<>(reservationService.getReservationsByUser(user.getId()), HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to get reservations of user.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

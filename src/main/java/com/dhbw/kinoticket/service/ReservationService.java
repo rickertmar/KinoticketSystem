@@ -7,11 +7,14 @@ import com.dhbw.kinoticket.request.CreateReservationRequest;
 import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import com.dhbw.kinoticket.response.MovieResponse;
 import com.dhbw.kinoticket.response.ReservationResponse;
+import com.dhbw.kinoticket.response.UserReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -178,4 +181,42 @@ CreateReservationRequest:
                 .tickets(reservation.getTickets())
                 .build();
     }
+
+
+    // Get Reservations of User
+    public List<UserReservationResponse> getReservationsByUser (Long userId) {
+
+        List<Reservation> reservationList = reservationRepository.findAll();
+        List<Reservation> matchingUserReservationList = new ArrayList<>();
+        // search from the List
+        for (Reservation currentReservation:reservationList) {
+            if (currentReservation.getUser().getId().equals(userId)) {
+                matchingUserReservationList.add(currentReservation);
+            }
+        }
+
+        // Check if the List is empty
+        if (matchingUserReservationList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No Reservations found");
+        }
+        return convertToUserReservationResponse(matchingUserReservationList);
+    }
+
+    private List<UserReservationResponse> convertToUserReservationResponse(List<Reservation> reservations) {
+        List<UserReservationResponse> response = new ArrayList<>();
+        for (Reservation currentReservation : reservations) {
+            var userReservationResponse = UserReservationResponse.builder()
+                    .total(currentReservation.getTotal())
+                    .userName(currentReservation.getUser().getEmail())
+                    .showingStart(currentReservation.getShowing().getTime())
+                    .showingExtras(currentReservation.getShowing().getShowingExtras())
+                    .movieTitle(currentReservation.getShowing().getMovie().getTitle())
+                    .tickets(currentReservation.getTickets())
+                    .build();
+            response.add(userReservationResponse);
+        }
+        return response;
+    }
+
+
 }

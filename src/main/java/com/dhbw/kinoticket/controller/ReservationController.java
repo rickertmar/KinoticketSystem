@@ -5,10 +5,7 @@ import com.dhbw.kinoticket.request.CreateReservationRequest;
 import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
-import com.dhbw.kinoticket.service.ReservationService;
-import com.dhbw.kinoticket.service.ShowingService;
-import com.dhbw.kinoticket.service.TicketService;
-import com.dhbw.kinoticket.service.UserService;
+import com.dhbw.kinoticket.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,6 +24,7 @@ public class ReservationController {
     private final UserService userService;
     private final ShowingService showingService;
     private final TicketService ticketService;
+    private final EmailService emailService;
 
     @PreAuthorize("hasAuthority('worker:read')")
     @GetMapping(value = "/id/{id}")
@@ -47,6 +45,7 @@ public class ReservationController {
             Principal principal = httpServletRequest.getUserPrincipal();
             User user = userService.getUserByEmail(principal.getName());
             ReservationResponse response = reservationService.createReservation(request, user);
+            // TODO Email notification handling with emailService here
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to create reservation.", HttpStatus.INTERNAL_SERVER_ERROR);

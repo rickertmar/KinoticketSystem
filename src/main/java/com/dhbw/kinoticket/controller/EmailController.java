@@ -1,7 +1,7 @@
 package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.request.EmailDetails;
-import com.dhbw.kinoticket.service.EmailService;
+import com.dhbw.kinoticket.service.EmailSenderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,13 +17,23 @@ import org.springframework.web.bind.annotation.RestController;
 public class EmailController {
 
     @Autowired
-    private EmailService emailService;
+    private EmailSenderService emailService;
 
     // Sending a simple Email
     @PostMapping("/sendMail")
     public ResponseEntity<?> sendMail(@RequestBody EmailDetails details) {
         try {
             return new ResponseEntity<>(emailService.sendSimpleMail(details), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // Sending an Email with HTML content
+    @PostMapping("/sendHtmlMail")
+    public ResponseEntity<?> sendHtmlMail(@RequestBody EmailDetails details) {
+        try {
+            return new ResponseEntity<>(emailService.sendHtmlMail(details), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }

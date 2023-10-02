@@ -2,6 +2,7 @@ package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.request.EmailDetails;
 import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
@@ -24,7 +25,7 @@ public class ReservationController {
     private final UserService userService;
     private final ShowingService showingService;
     private final TicketService ticketService;
-    private final EmailService emailService;
+    private final EmailSenderService emailService;
 
     @PreAuthorize("hasAuthority('worker:read')")
     @GetMapping(value = "/id/{id}")
@@ -33,7 +34,7 @@ public class ReservationController {
             WorkerReservationResponse response = reservationService.getWorkerReservationById(id);
             return new ResponseEntity<>(response, HttpStatus.FOUND);
         } catch (Exception e) {
-            return  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -45,7 +46,19 @@ public class ReservationController {
             Principal principal = httpServletRequest.getUserPrincipal();
             User user = userService.getUserByEmail(principal.getName());
             ReservationResponse response = reservationService.createReservation(request, user);
-            // TODO Email notification handling with emailService here
+
+            // TODO uncomment to activate email confirmation sending
+            /*
+            emailService.sendHtmlMail(
+                    new EmailDetails(
+                            user.getEmail(),
+                            emailService.generateReservationEmailBodyHTML(response),
+                            "Reservation Confirmation for " + response.getMovie().getTitle(),
+                            null
+                    )
+            );
+            */
+
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to create reservation.", HttpStatus.INTERNAL_SERVER_ERROR);

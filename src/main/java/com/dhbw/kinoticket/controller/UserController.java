@@ -19,22 +19,31 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping(value = "/users")
 public class UserController {
+
     private final UserService userService;
+
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/id/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
+    public ResponseEntity<?> getUserById(@PathVariable("id") Long id) {
         try {
             User user = userService.getUserById(id);
+            if (user == null) {
+                return new ResponseEntity<>("Null value returned.", HttpStatus.NOT_FOUND);
+            }
             return new ResponseEntity<>(user, HttpStatus.FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/email/{email}")
-    public ResponseEntity<User> getUserByEmail(@PathVariable("email") String email) {
+    public ResponseEntity<?> getUserByEmail(@PathVariable("email") String email) {
         try {
             User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return new ResponseEntity<>("Null value returned.", HttpStatus.NOT_FOUND);
+            }
             return new ResponseEntity<>(user, HttpStatus.FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -43,29 +52,42 @@ public class UserController {
 
     @PreAuthorize("hasAuthority('admin:read')")
     @GetMapping(value = "/all")
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<?> getAllUsers() {
         try {
             List<User> users = userService.getAllUsers();
+            if (users == null) {
+                return new ResponseEntity<>("Null value returned.", HttpStatus.NOT_FOUND);
+            }
             return new ResponseEntity<>(users, HttpStatus.FOUND);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
     @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping(value = "/id/{id}")
     public ResponseEntity<?>deleteUserById(@PathVariable("id") Long id) {
         try {
-            userService.deleteUser(userService.getUserById(id));
+            User user = userService.getUserById(id);
+            if (user == null) {
+                return new ResponseEntity<>("User not found.", HttpStatus.NOT_FOUND);
+            }
+            userService.deleteUser(user);
             return new ResponseEntity<>("User deleted.", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to delete User.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
     @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping(value = "/email/{email}")
     public ResponseEntity<?> deleteUserByEmail(@PathVariable("email") String email) {
         try {
-            userService.deleteUser(userService.getUserByEmail(email));
+            User user = userService.getUserByEmail(email);
+            if (user == null) {
+                return new ResponseEntity<>("User not found.", HttpStatus.NOT_FOUND);
+            }
+            userService.deleteUser(user);
             return new ResponseEntity<>("User deleted.", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to delete User.", HttpStatus.INTERNAL_SERVER_ERROR);

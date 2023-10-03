@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -58,6 +59,7 @@ public class ShowingController {
     }
 
     // Create showing
+    @PreAuthorize("hasAuthority('admin:create')")
     @PostMapping
     public ResponseEntity<?> createShowing(@RequestBody CreateShowingRequest request) {
         try {
@@ -76,6 +78,7 @@ public class ShowingController {
     }
 
     // Update showing
+    @PreAuthorize("hasAuthority('admin:update')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateShowing(@PathVariable Long id,
                                            @RequestBody CreateShowingRequest createShowingRequest) {
@@ -89,6 +92,7 @@ public class ShowingController {
     }
 
     // Delete showing
+    @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping("/{showingId}")
     public ResponseEntity<?> deleteShowing(@PathVariable Long showingId) {
         try {

@@ -19,27 +19,32 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
     private final UserRepository userRepository;
     private final LocationAddressRepository locationAddressRepository;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
+
     public User getUserById(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + id));
     }
+
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with E-Mail: " + email));
     }
-    public UserResponse updateUser(UpdateUserRequest updateUserRequest, User user){
+
+    public UserResponse updateUser(UpdateUserRequest updateUserRequest, User user) {
         user.setFirstName(updateUserRequest.getFirstName());
         user.setLastName(updateUserRequest.getLastName());
         userRepository.save(user);
         return userResponseBuilder(user);
     }
-    public UserResponse userResponseBuilder(User user){
+
+    public UserResponse userResponseBuilder(User user) {
         return UserResponse.builder()
                 .firstName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -48,13 +53,14 @@ public class UserService {
                 .shipping(user.getShippingLocation())
                 .build();
     }
-    public LocationResponse saveShippingLocation(CreateLocationRequest locationRequest, User user){
 
+    public LocationResponse saveShippingLocation(CreateLocationRequest locationRequest, User user) {
         user.setShippingLocation(locationAddressBuilder(locationRequest));
         userRepository.save(user);
         return locationResponseBuilder(locationAddressBuilder(locationRequest));
     }
-    public LocationResponse updateShippingLocation(CreateLocationRequest createLocationRequest, User user){
+
+    public LocationResponse updateShippingLocation(CreateLocationRequest createLocationRequest, User user) {
         LocationAddress location = user.getShippingLocation();
         location.setStreet(createLocationRequest.getStreet());
         location.setCity(createLocationRequest.getCity());
@@ -65,18 +71,21 @@ public class UserService {
         userRepository.save(user);
         return locationResponseBuilder(user.getShippingLocation());
     }
-    public void deleteShippingLocation(User user){
+
+    public void deleteShippingLocation(User user) {
         LocationAddress locationAddress = user.getShippingLocation();
         locationAddressRepository.delete(locationAddress);
         user.setShippingLocation(null);
         userRepository.save(user);
     }
-    public LocationResponse saveBillingLocation(CreateLocationRequest locationRequest, User user){
+
+    public LocationResponse saveBillingLocation(CreateLocationRequest locationRequest, User user) {
         user.setBillingLocation(locationAddressBuilder(locationRequest));
         userRepository.save(user);
         return locationResponseBuilder(locationAddressBuilder(locationRequest));
     }
-    public LocationResponse updateBillingLocation(CreateLocationRequest createLocationRequest, User user){
+
+    public LocationResponse updateBillingLocation(CreateLocationRequest createLocationRequest, User user) {
         LocationAddress location = user.getBillingLocation();
         location.setStreet(createLocationRequest.getStreet());
         location.setCity(createLocationRequest.getCity());
@@ -87,12 +96,14 @@ public class UserService {
         userRepository.save(user);
         return locationResponseBuilder(user.getBillingLocation());
     }
-    public void deleteBillingLocation(User user){
+
+    public void deleteBillingLocation(User user) {
         LocationAddress locationAddress = user.getBillingLocation();
         locationAddressRepository.delete(locationAddress);
         user.setBillingLocation(null);
         userRepository.save(user);
     }
+
     public LocationResponse locationResponseBuilder(LocationAddress locationAddress) {
         return LocationResponse.builder()
                 .street(locationAddress.getStreet())
@@ -101,15 +112,16 @@ public class UserService {
                 .postcode(locationAddress.getPostcode())
                 .build();
     }
-    public LocationAddress locationAddressBuilder(CreateLocationRequest createLocationRequest){
-            return LocationAddress
-                    .builder()
-                    .street(createLocationRequest.getStreet())
-                    .city(createLocationRequest.getCity())
-                    .country(createLocationRequest.getCountry())
-                    .postcode(createLocationRequest.getPostcode())
-                    .build();
-        }
+
+    public LocationAddress locationAddressBuilder(CreateLocationRequest createLocationRequest) {
+        return LocationAddress
+                .builder()
+                .street(createLocationRequest.getStreet())
+                .city(createLocationRequest.getCity())
+                .country(createLocationRequest.getCountry())
+                .postcode(createLocationRequest.getPostcode())
+                .build();
+    }
 
     public void deleteUser(User user) {
         userRepository.delete(user);

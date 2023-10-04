@@ -423,6 +423,7 @@ public class ShowingServiceTest {
     }
 
     @Test
+    @Order(17)
     public void test_UnblockSeatsOfShowing() {
         // Create a mock Showing object
         Showing showing = new Showing();
@@ -475,7 +476,8 @@ public class ShowingServiceTest {
     }
 
     @Test
-    public void testUnblockSeatsOfShowing_InvalidShowingId() {
+    @Order(18)
+    public void test_UnblockSeatsOfShowing_InvalidShowingId() {
         // Create a mock UpdateSeatStatusRequest object
         UpdateSeatStatusRequest request = new UpdateSeatStatusRequest();
         request.setShowingId(1L);

@@ -11,6 +11,7 @@ import com.dhbw.kinoticket.service.CinemaService;
 import com.dhbw.kinoticket.service.MovieService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/cinemas")
+@RequestMapping(value = "/cinemas", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CinemaController {
     private final CinemaService cinemaService;
     private final CinemaHallService cinemaHallService;

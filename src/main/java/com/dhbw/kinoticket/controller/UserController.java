@@ -8,6 +8,7 @@ import com.dhbw.kinoticket.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     @PreAuthorize("hasAuthority('admin:read')")
-    @GetMapping(value = "/id/{id}")
+    @GetMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getUserById(@PathVariable("id") Long id) {
         try {
             User user = userService.getUserById(id);
@@ -37,7 +38,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAuthority('admin:read')")
-    @GetMapping(value = "/email/{email}")
+    @GetMapping(value = "/email/{email}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getUserByEmail(@PathVariable("email") String email) {
         try {
             User user = userService.getUserByEmail(email);
@@ -51,7 +52,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAuthority('admin:read')")
-    @GetMapping(value = "/all")
+    @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllUsers() {
         try {
             List<User> users = userService.getAllUsers();
@@ -65,7 +66,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAuthority('admin:delete')")
-    @DeleteMapping(value = "/id/{id}")
+    @DeleteMapping(value = "/id/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?>deleteUserById(@PathVariable("id") Long id) {
         try {
             User user = userService.getUserById(id);
@@ -80,7 +81,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasAuthority('admin:delete')")
-    @DeleteMapping(value = "/email/{email}")
+    @DeleteMapping(value = "/email/{email}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteUserByEmail(@PathVariable("email") String email) {
         try {
             User user = userService.getUserByEmail(email);
@@ -94,12 +95,13 @@ public class UserController {
         }
     }
 
-    @GetMapping(value = "")
+    @GetMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<UserResponse> getSelf(HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         return ResponseEntity.ok(userService.userResponseBuilder(userService.getUserByEmail(principal.getName())));
     }
-    @DeleteMapping(value = "")
+
+    @DeleteMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteSelf(HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {
@@ -109,7 +111,8 @@ public class UserController {
             return new ResponseEntity<>("Failed to delete User.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PutMapping(value = "")
+
+    @PutMapping(value = "", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateSelf(@RequestBody UpdateUserRequest updateUserRequest, HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {
@@ -119,7 +122,7 @@ public class UserController {
         }
     }
 
-    @PostMapping(value = "/shipping")
+    @PostMapping(value = "/shipping", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> addShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {
@@ -128,7 +131,8 @@ public class UserController {
             return new ResponseEntity<>("Failed to save Location.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PutMapping(value = "/shipping")
+
+    @PutMapping(value = "/shipping", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateShippingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {
@@ -137,7 +141,8 @@ public class UserController {
             return new ResponseEntity<>("Failed to save Location.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @DeleteMapping(value = "/shipping")
+
+    @DeleteMapping(value = "/shipping", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteShippingAddress(HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {
@@ -147,7 +152,8 @@ public class UserController {
             return new ResponseEntity<>("Failed to delete Location.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PostMapping(value = "/billing")
+
+    @PostMapping(value = "/billing", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> addBillingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {
@@ -156,7 +162,8 @@ public class UserController {
             return new ResponseEntity<>("Failed to save Location.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PutMapping(value = "/billing")
+
+    @PutMapping(value = "/billing", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> updateBillingAddress(@RequestBody CreateLocationRequest createLocationRequest, HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {
@@ -165,7 +172,8 @@ public class UserController {
             return new ResponseEntity<>("Failed to save Location.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @DeleteMapping(value = "/billing")
+
+    @DeleteMapping(value = "/billing", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteBillingAddress(HttpServletRequest httpServletRequest) {
         Principal principal = httpServletRequest.getUserPrincipal();
         try {

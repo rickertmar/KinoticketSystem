@@ -2,14 +2,15 @@ package com.dhbw.kinoticket.controller;
 
 import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.request.EmailDetails;
+import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import com.dhbw.kinoticket.response.ReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
-import com.dhbw.kinoticket.service.ReservationService;
-import com.dhbw.kinoticket.service.TicketService;
-import com.dhbw.kinoticket.service.UserService;
+import com.dhbw.kinoticket.service.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,12 +19,14 @@ import java.security.Principal;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(value = "/reservation")
+@RequestMapping(value = "/reservation", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ReservationController {
 
     private final ReservationService reservationService;
     private final UserService userService;
+    private final ShowingService showingService;
     private final TicketService ticketService;
+    private final EmailSenderService emailService;
 
     @PreAuthorize("hasAuthority('worker:read')")
     @GetMapping(value = "/id/{id}")
@@ -32,7 +35,7 @@ public class ReservationController {
             WorkerReservationResponse response = reservationService.getWorkerReservationById(id);
             return new ResponseEntity<>(response, HttpStatus.FOUND);
         } catch (Exception e) {
-            return  new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
@@ -40,13 +43,38 @@ public class ReservationController {
     @PostMapping(value = "")
     public ResponseEntity<?> createReservation(HttpServletRequest httpServletRequest,
                                                @RequestBody CreateReservationRequest request) {
-        Principal principal = httpServletRequest.getUserPrincipal();
         try {
+            Principal principal = httpServletRequest.getUserPrincipal();
             User user = userService.getUserByEmail(principal.getName());
             ReservationResponse response = reservationService.createReservation(request, user);
+
+            // TODO uncomment to activate email confirmation sending
+            /*
+            emailService.sendHtmlMail(
+                    new EmailDetails(
+                            user.getEmail(),
+                            emailService.generateReservationEmailBodyHTML(response),
+                            "Reservation Confirmation for " + response.getMovie().getTitle(),
+                            null
+                    )
+            );
+            */
+
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>("Failed to create reservation.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // Get Reservations of User
+    @GetMapping(value = "/getUserReservations")
+    public ResponseEntity<?> getReservationsByUser(HttpServletRequest httpServletRequest) {
+        try {
+            Principal principal = httpServletRequest.getUserPrincipal();
+            User user = userService.getUserByEmail(principal.getName());
+            return new ResponseEntity<>(reservationService.getReservationsByUser(user.getId()), HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Failed to get reservations of user.", HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -75,11 +103,35 @@ public class ReservationController {
         }
     }
 
+
+    // ----------------------------------------------------------------
+    // Manage status of showing seats for the reservation process
+    // ----------------------------------------------------------------
+
+    // Block seats of showing (in reservation process)
+    @PutMapping(value = "/blockSeats")
+    public ResponseEntity<?> blockSeats(@RequestBody UpdateSeatStatusRequest request) {
+        try {
+            return new ResponseEntity<>(showingService.blockSeatsOfShowing(request), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
+    // Unblock seats of showing (in reservation process)
+    @PutMapping(value = "/unblockSeats")
+    public ResponseEntity<?> unblockSeats(@RequestBody UpdateSeatStatusRequest request) {
+        try {
+            return new ResponseEntity<>(showingService.unblockSeatsOfShowing(request), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
 }
 
 
 /*
-
+ReservationRequest:
 {
   "selectedSeatIdList": [1, 2],
   "studentDiscounts": 1,
@@ -134,6 +186,13 @@ ReservationResponse:
         }
     ],
     "total": 5.0
+}
+
+
+Block/Unblock Request:
+{
+    "showingId": 1,
+    "seatIds": [1, 2, 3, 4, 5]
 }
 
 */

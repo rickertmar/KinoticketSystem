@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.controller;
 
+import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
 import com.dhbw.kinoticket.service.CinemaHallService;
 import com.dhbw.kinoticket.service.ShowingService;
@@ -7,12 +8,16 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Set;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/showings")
+@RequestMapping(value = "/showings", produces = MediaType.APPLICATION_JSON_VALUE)
 public class ShowingController {
 
     @Autowired
@@ -41,7 +46,21 @@ public class ShowingController {
         }
     }
 
+    // Get seats of showing
+    @GetMapping(value = "/{id}/getSeats")
+    public ResponseEntity<?> getSeatsOfShowing(@PathVariable Long id) {
+        try {
+            Set<Seat> seats = showingService.getSeatsOfShowing(id);
+            return new ResponseEntity<>(seats, HttpStatus.FOUND);
+        } catch (EntityNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     // Create showing
+    @PreAuthorize("hasAuthority('admin:create')")
     @PostMapping
     public ResponseEntity<?> createShowing(@RequestBody CreateShowingRequest request) {
         try {
@@ -60,6 +79,7 @@ public class ShowingController {
     }
 
     // Update showing
+    @PreAuthorize("hasAuthority('admin:update')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateShowing(@PathVariable Long id,
                                            @RequestBody CreateShowingRequest createShowingRequest) {
@@ -73,6 +93,7 @@ public class ShowingController {
     }
 
     // Delete showing
+    @PreAuthorize("hasAuthority('admin:delete')")
     @DeleteMapping("/{showingId}")
     public ResponseEntity<?> deleteShowing(@PathVariable Long showingId) {
         try {
@@ -85,3 +106,15 @@ public class ShowingController {
         }
     }
 }
+
+/*
+
+{
+    "time": "2022-12-31T20:00:00",
+    "showingExtras": "3D",
+    "movieId": 1,
+    "cinemaHallId": 1,
+    "seatPrice": 5.0
+}
+
+*/

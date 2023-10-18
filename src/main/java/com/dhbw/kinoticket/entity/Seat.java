@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -20,12 +22,28 @@ public class Seat {
 
     private char seatRow;
     private int number;
-    private int xLoc; //relative X-Location in theatre
-    private int yLoc; //relative Y-Location in theatre
-    private boolean isBlocked;
+    private int xLoc; // relative X-Location in theatre
+    private int yLoc; // relative Y-Location in theatre
+    private boolean isBlocked; // indicates a temporary block
+    private boolean isPermanentBlocked; // indicates a permanent block, e.g. when booked
+
+    @Column(name = "blocked_at_timestamp")
+    @Temporal(TemporalType.TIMESTAMP)
+    private LocalDateTime blockedAtTimestamp; // timestamp when blocked
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hall_id")
     private CinemaHall cinemaHall;
+
+
+    // Check if blocking is expired
+    public boolean isBlockingExpired() {
+        if (blockedAtTimestamp == null) {
+            return false; // Seat is not blocked
+        }
+
+        LocalDateTime expirationTime = blockedAtTimestamp.plusMinutes(15); // Blocking expires after 15 minutes
+        return LocalDateTime.now().isAfter(expirationTime);
+    }
 }

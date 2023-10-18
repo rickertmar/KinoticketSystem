@@ -7,6 +7,7 @@ import com.dhbw.kinoticket.entity.User;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
 import com.dhbw.kinoticket.response.MovieResponse;
 import com.dhbw.kinoticket.response.ReservationResponse;
+import com.dhbw.kinoticket.response.UserReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import com.dhbw.kinoticket.service.ReservationService;
 import com.dhbw.kinoticket.service.TicketService;
@@ -32,8 +33,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -121,6 +121,40 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.movie").exists())
                 .andExpect(jsonPath("$.tickets").isArray())
                 .andExpect(jsonPath("$.total").value(response.getTotal()));
+    }
+
+    @Test
+    @Disabled
+    public void test_GetReservationsByUser() throws Exception {
+        // Create a mock User object
+        User user = User.builder()
+                .id(1L)
+                .email("test@test.de")
+                .build();
+
+        // Create a mock ReservationResponse object
+        UserReservationResponse reservationResponse = UserReservationResponse.builder()
+                .total(10.0)
+                .build();
+        List<UserReservationResponse> list = new ArrayList<>();
+        list.add(reservationResponse);
+
+        // Mock the behavior of the userService.getUserByEmail() method
+        when(userService.getUserByEmail(anyString())).thenReturn(user);
+
+        // Mock the behavior of the reservationService.getReservationsByUser() method
+        when(reservationService.getReservationsByUser(anyLong())).thenReturn(list);
+
+        // Perform the GET request
+        mockMvc.perform(get("/reservation/getUserReservations"))
+                .andExpect(status().isFound())
+                .andExpect(jsonPath("$.total").value(10.0));
+
+        // Verify that the userService.getUserByEmail() method is called
+        verify(userService, times(1)).getUserByEmail(anyString());
+
+        // Verify that the reservationService.getReservationsByUser() method is called
+        verify(reservationService, times(1)).getReservationsByUser(anyLong());
     }
 
 

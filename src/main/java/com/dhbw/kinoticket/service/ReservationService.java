@@ -2,17 +2,24 @@ package com.dhbw.kinoticket.service;
 
 import com.dhbw.kinoticket.entity.*;
 import com.dhbw.kinoticket.repository.ReservationRepository;
+import com.dhbw.kinoticket.repository.ShowingRepository;
 import com.dhbw.kinoticket.request.CreateReservationRequest;
+import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
 import com.dhbw.kinoticket.response.MovieResponse;
 import com.dhbw.kinoticket.response.ReservationResponse;
+import com.dhbw.kinoticket.response.UserReservationResponse;
 import com.dhbw.kinoticket.response.WorkerReservationResponse;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @Service
@@ -20,6 +27,7 @@ import java.util.List;
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ShowingRepository showingRepository;
     private final ShowingService showingService;
     private final TicketService ticketService;
 
@@ -44,16 +52,15 @@ public class ReservationService {
         reservation.setShowing(showing);
 
         // Iterate through requested seat IDs
-        List<Seat> seats = showing.getCinemaHall().getSeats(); // TODO change to (free)SeatsList of showing
+        Set<Seat> seats = showing.getSeats();
         List<Long> selectedSeatIdList = request.getSelectedSeatIdList();
         int studentDiscounts = request.getStudentDiscounts();
         int childDiscounts = request.getChildDiscounts();
         int noDiscounts = request.getNoDiscounts();
 
-        for (int i = 0; i < selectedSeatIdList.size(); i++) {
-            Long seatId = selectedSeatIdList.get(i);
+        for (Long seatId : selectedSeatIdList) {
 
-            // Disount handling per seat/ticket
+            // Discount handling per seat/ticket
             Discount discount = null;
             if (noDiscounts > 0) {
                 discount = Discount.REGULAR;
@@ -71,9 +78,18 @@ public class ReservationService {
                 if (seat.getId().equals(seatId)) {
                     seatFound = true;
 
+                    // Check if the seat is still/already blocked
+                    if (seat.isPermanentBlocked() || seat.isBlockingExpired()) {
+                        throw new IllegalArgumentException("Seat is no longer available for booking: " + seatId);
+                    }
+
                     // Create a ticket for each seat
                     Ticket ticket = ticketService.createTicket(discount, reservation, seat);
                     reservation.getTickets().add(ticket);
+
+                    // Change status of seat to blocked
+                    seat.setPermanentBlocked(true);
+
                     break; // Break out of the inner loop once a matching seat is found
                 }
             }
@@ -83,19 +99,12 @@ public class ReservationService {
             }
         }
 
+        // Save/Update showing to update the status of booked seats to permanent blocked
+        showingRepository.save(showing);
+
         // Calculate and set the total price for the reservation
-        double total = 0.0;
         List<Ticket> ticketList = reservation.getTickets();
-        for (Ticket ticket : ticketList) {
-            if (ticket.getDiscount().equals(Discount.STUDENT)) {
-                total += (showing.getSeatPrice() - 2.0);
-            } else if (ticket.getDiscount().equals(Discount.CHILD)) {
-                total += (showing.getSeatPrice() - 3.0);
-            } else {
-                // Regular price
-                total += showing.getSeatPrice();
-            }
-        }
+        double total = calculateTotalPrice(showing, ticketList);
         reservation.setTotal(total);
 
         // Mark reservation as paid and save it
@@ -114,19 +123,25 @@ public class ReservationService {
                 .build();
     }
 
-/*
-CreateReservationRequest:
-{
-  "selectedSeatIdList": [1, 2],     // IDs of selected seats in a list
-  "studentDiscounts": 1,            // Number of student discounts
-  "childDiscounts": 1,                 // Number of child discounts
-  "noDiscounts": 0,                    // Number of no discounts/regulars
-  "showingId": 102                    // ID of the showing
-}
-*/
 
+    // Calculate total of given tickets
+    double calculateTotalPrice(Showing showing, List<Ticket> tickets) {
+        double total = 0.0;
+        for (Ticket ticket : tickets) {
+            if (ticket.getDiscount().equals(Discount.STUDENT)) {
+                total += (showing.getSeatPrice() - 2.0);
+            } else if (ticket.getDiscount().equals(Discount.CHILD)) {
+                total += (showing.getSeatPrice() - 3.0);
+            } else {
+                // Regular price
+                total += showing.getSeatPrice();
+            }
+        }
+        return total;
+    }
 
-    private MovieResponse convertToMovieDTO(Movie movie) {
+    // Convert movie to movie-response
+    MovieResponse convertToMovieDTO(Movie movie) {
         return MovieResponse.builder()
                 .id(movie.getId())
                 .title(movie.getTitle())
@@ -143,6 +158,17 @@ CreateReservationRequest:
                 .build();
     }
 
+/*
+CreateReservationRequest:
+{
+  "selectedSeatIdList": [1, 2],     // IDs of selected seats in a list
+  "studentDiscounts": 1,            // Number of student discounts
+  "childDiscounts": 1,              // Number of child discounts
+  "noDiscounts": 0,                 // Number of no discounts/regulars
+  "showingId": 102                  // ID of the showing
+}
+*/
+
     public WorkerReservationResponse convertToWorkerResponse(Reservation reservation) {
         if (reservation == null) {
             return null;
@@ -152,10 +178,54 @@ CreateReservationRequest:
                 .id(reservation.getId())
                 .total(reservation.getTotal())
                 .isPaid(reservation.isPaid())
-                .userName(null) // TODO Logic missing
-                .movieStart(null) // TODO Logic missing
-                .movieName(null) // TODO Logic missing
+                .userName(reservation.getUser().getEmail())
+                .movieStart(reservation.getShowing().getTime())
+                .movieName(reservation.getShowing().getMovie().getTitle())
                 .tickets(reservation.getTickets())
                 .build();
     }
+
+
+    // Get Reservations of User
+    public List<UserReservationResponse> getReservationsByUser (Long userId) {
+
+        // Fetch reservations from repository
+        List<Reservation> reservationList = reservationRepository.findAll();
+
+        List<Reservation> matchingUserReservationList = new ArrayList<>();
+
+        // Search reservations of specific user from the list
+        for (Reservation currentReservation:reservationList) {
+            if (currentReservation.getUser().getId().equals(userId)) {
+                matchingUserReservationList.add(currentReservation);
+            }
+        }
+
+        // Check if the List is empty
+        if (matchingUserReservationList.isEmpty()){
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND,"No Reservations found");
+        }
+
+        return convertToUserReservationResponse(matchingUserReservationList);
+    }
+
+
+    // Convert list of reservations to list of user-reservation-responses
+    List<UserReservationResponse> convertToUserReservationResponse(List<Reservation> reservations) {
+        List<UserReservationResponse> response = new ArrayList<>();
+        for (Reservation currentReservation : reservations) {
+            var userReservationResponse = UserReservationResponse.builder()
+                    .total(currentReservation.getTotal())
+                    .userName(currentReservation.getUser().getEmail())
+                    .showingStart(currentReservation.getShowing().getTime())
+                    .showingExtras(currentReservation.getShowing().getShowingExtras())
+                    .movieTitle(currentReservation.getShowing().getMovie().getTitle())
+                    .tickets(currentReservation.getTickets())
+                    .build();
+            response.add(userReservationResponse);
+        }
+        return response;
+    }
+
+
 }

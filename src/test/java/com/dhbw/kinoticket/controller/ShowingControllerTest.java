@@ -1,11 +1,13 @@
 package com.dhbw.kinoticket.controller;
 
+import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.entity.Showing;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
 import com.dhbw.kinoticket.service.CinemaHallService;
 import com.dhbw.kinoticket.service.ShowingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -21,7 +23,9 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -59,8 +63,8 @@ class ShowingControllerTest {
     void test_GetAllShowings_ShouldReturnAllShowings() throws Exception {
         // Arrange
         List<Showing> showings = new ArrayList<>();
-        showings.add(new Showing(1L, 12.70, null, null, "3D", null, null, null));
-        showings.add(new Showing(2L, 9.70, null, null, "2D", null, null, null));
+        showings.add(new Showing(1L, 12.70, null, null, "3D", null, null));
+        showings.add(new Showing(2L, 9.70, null, null, "2D", null, null));
 
         // Mock
         when(showingService.getAllShowings()).thenReturn(showings);
@@ -78,7 +82,7 @@ class ShowingControllerTest {
     void test_GetShowingById_ShouldReturnShowingById() throws Exception {
         // Arrange
         Long showingId = 1L;
-        Showing showing = new Showing(showingId, 12.70, null, null, "3D", null, null, null);
+        Showing showing = new Showing(showingId, 12.70, null, null, "3D", null, null);
 
         // Mock
         when(showingService.getShowingById(showingId)).thenReturn(showing);
@@ -93,6 +97,43 @@ class ShowingControllerTest {
 
     @Test
     @Order(3)
+    public void test_GetSeatsOfShowing_ShouldReturnSeatsOfShowing() throws Exception {
+        // Mock the behavior of the showingService.getSeatsOfShowing() method
+        Set<Seat> seats = new HashSet<>();
+        seats.add(new Seat());
+        when(showingService.getSeatsOfShowing(1L)).thenReturn(seats);
+
+        // Perform the GET request to the endpoint
+        mockMvc.perform(get("/showings/{id}/getSeats", 1L))
+                .andExpect(status().isFound())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    @Order(4)
+    public void test_GetSeatsOfShowing_EntityNotFoundException() throws Exception {
+        // Mock the behavior of the showingService.getSeatsOfShowing() method to throw EntityNotFoundException
+        when(showingService.getSeatsOfShowing(1L)).thenThrow(new EntityNotFoundException());
+
+        // Perform the GET request to the endpoint
+        mockMvc.perform(get("/showings/{id}/getSeats", 1L))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @Order(5)
+    public void test_GetSeatsOfShowing_Exception() throws Exception {
+        // Mock the behavior of the showingService.getSeatsOfShowing() method to throw an exception
+        when(showingService.getSeatsOfShowing(1L)).thenThrow(new RuntimeException());
+
+        // Perform the GET request to the endpoint
+        mockMvc.perform(get("/showings/{id}/getSeats", 1L))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
+    @Order(6)
     public void test_CreateShowing_WhenValidRequest_ThenReturnCreated() throws Exception {
         // Arrange
         CreateShowingRequest request = new CreateShowingRequest();
@@ -100,7 +141,7 @@ class ShowingControllerTest {
         request.setCinemaHallId(1L);
         request.setTime(null);
         request.setShowingExtras("3D");
-        Showing showing = new Showing(1L, 12.70, null, null, "3D", null, null, null);
+        Showing showing = new Showing(1L, 12.70, null, null, "3D", null, null);
 
         when(showingService.doesMovieExist(request.getMovieId())).thenReturn(true);
         when(cinemaHallService.doesCinemaHallExist(request.getCinemaHallId())).thenReturn(true);
@@ -115,14 +156,14 @@ class ShowingControllerTest {
     }
 
     @Test
-    @Order(4)
+    @Order(7)
     public void test_UpdateShowing_WhenValidRequest_ThenReturnOk() throws Exception {
         // Arrange
         Long id = 1L;
         CreateShowingRequest request = new CreateShowingRequest();
         request.setMovieId(1L);
         request.setCinemaHallId(1L);
-        Showing showing = new Showing(1L, 12.70, null, null, "3D", null, null, null);
+        Showing showing = new Showing(1L, 12.70, null, null, "3D", null, null);
 
         // Mock
         when(showingService.updateShowing(id, request)).thenReturn(showing);
@@ -136,7 +177,7 @@ class ShowingControllerTest {
     }
 
     @Test
-    @Order(5)
+    @Order(8)
     public void test_DeleteShowing_WhenValidRequest_ThenReturnOk() throws Exception {
         // Arrange
         Long showingId = 1L;

@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,8 +44,11 @@ public class JwtServiceTest {
         Map<String, Object> extraClaims = new HashMap<>();
         extraClaims.put("claim1", "value1");
 
+        // Set the expiration time to a future date
+        Date expirationDate = new Date(System.currentTimeMillis() + 1000 * 60 * 60); // 1 hour from now
+
         // Act
-        String token = jwtService.buildToken(extraClaims, userDetails, 1000);
+        String token = jwtService.buildToken(extraClaims, userDetails, expirationDate.getTime());
 
         // Assert
         Claims claims = Jwts.parserBuilder().setSigningKey(jwtService.getSignInKey()).build().parseClaimsJws(token).getBody();

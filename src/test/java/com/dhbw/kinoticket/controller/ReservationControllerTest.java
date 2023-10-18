@@ -125,7 +125,7 @@ class ReservationControllerTest {
 
     @Test
     @Disabled
-    public void testGetReservationsByUser() throws Exception {
+    public void test_GetReservationsByUser() throws Exception {
         // Create a mock User object
         User user = User.builder()
                 .id(1L)

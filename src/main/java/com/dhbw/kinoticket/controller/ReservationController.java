@@ -50,7 +50,7 @@ public class ReservationController {
 
             // TODO uncomment to activate email confirmation sending
             /*
-            emailService.sendHtmlMail(
+            emailService.sendHtmlEmail(
                     new EmailDetails(
                             user.getEmail(),
                             emailService.generateReservationEmailBodyHTML(response),

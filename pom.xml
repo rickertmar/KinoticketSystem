@@ -38,6 +38,12 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mail</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>com.azure</groupId>
+			<artifactId>azure-communication-email</artifactId>
+			<version>1.0.6</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.springdoc</groupId>

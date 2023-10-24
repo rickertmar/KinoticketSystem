@@ -230,11 +230,4 @@ class CinemaServiceTest {
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> cinemaService.updateLocationAddress(cinemaId, newLocationAddress));
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
     }
-
-    @Test
-    @Order(12)
-    @Disabled
-        // Testing needed? GetCinema and save is already tested
-    void test_UpdateLocationAddress() {
-    }
 }

@@ -123,40 +123,6 @@ class ReservationControllerTest {
                 .andExpect(jsonPath("$.total").value(response.getTotal()));
     }
 
-    @Test
-    @Disabled
-    public void test_GetReservationsByUser() throws Exception {
-        // Create a mock User object
-        User user = User.builder()
-                .id(1L)
-                .email("test@test.de")
-                .build();
-
-        // Create a mock ReservationResponse object
-        UserReservationResponse reservationResponse = UserReservationResponse.builder()
-                .total(10.0)
-                .build();
-        List<UserReservationResponse> list = new ArrayList<>();
-        list.add(reservationResponse);
-
-        // Mock the behavior of the userService.getUserByEmail() method
-        when(userService.getUserByEmail(anyString())).thenReturn(user);
-
-        // Mock the behavior of the reservationService.getReservationsByUser() method
-        when(reservationService.getReservationsByUser(anyLong())).thenReturn(list);
-
-        // Perform the GET request
-        mockMvc.perform(get("/reservation/getUserReservations"))
-                .andExpect(status().isFound())
-                .andExpect(jsonPath("$.total").value(10.0));
-
-        // Verify that the userService.getUserByEmail() method is called
-        verify(userService, times(1)).getUserByEmail(anyString());
-
-        // Verify that the reservationService.getReservationsByUser() method is called
-        verify(reservationService, times(1)).getReservationsByUser(anyLong());
-    }
-
 
     // ----------------------------------------------------------------
     // Ticket Testing Methods

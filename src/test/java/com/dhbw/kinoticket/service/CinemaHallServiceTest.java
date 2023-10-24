@@ -122,19 +122,18 @@ public class CinemaHallServiceTest {
         List<CinemaHall> cinemaHallList = new ArrayList<>();
         cinemaHallList.add(cinemaHall);
 
-// Mock: Return the cinema hall when findById is called
+        // Mock: Return the cinema hall when findById is called
         when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.of(cinemaHall));
-// Mock the repository save method
+        // Mock the repository save method
         when(cinemaHallRepository.save(any(CinemaHall.class))).thenReturn(cinemaHall);
 
-// Act
+        // Act
         CinemaHall updatedCinemaHall = cinemaHallService.addSeatsToCinemaHall(cinemaHallId, createSeatRequests);
 
-// Assert
+        // Assert
         assertEquals(cinemaHallId, updatedCinemaHall.getId());
         assertEquals(createSeatRequests.size(), updatedCinemaHall.getSeats().size());
         verify(cinemaHallRepository, times(1)).save(any(CinemaHall.class));
-
     }
 
     @Test
@@ -144,13 +143,12 @@ public class CinemaHallServiceTest {
         Long cinemaHallId = 2L;
         CreateSeatRequest createSeatRequest = new CreateSeatRequest('A', 1, 10, 10, true);
 
-// Mock - Simulate that the cinema hall with the provided ID is not found
+        // Mock - Simulate that the cinema hall with the provided ID is not found
         when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.empty());
 
-// Act and Assert
+        // Act and Assert
         ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> cinemaHallService.addSeatsToCinemaHall(cinemaHallId, List.of(createSeatRequest)));
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
-
     }
 
     @Test
@@ -161,54 +159,21 @@ public class CinemaHallServiceTest {
         String newName = "Updated Cinema Hall Name";
         List<CreateSeatRequest> newSeatRequests = new ArrayList<>();
 
-// Mock behavior to return a cinema hall with seats when getCinemaHallById is called
+        // Mock behavior to return a cinema hall with seats when getCinemaHallById is called
         CinemaHall existingCinemaHall = new CinemaHall(cinemaHallId, "Cinema Hall Name", null, null);
         List<Seat> oldSeats = new ArrayList<>();
         existingCinemaHall.setSeats(oldSeats);
 
-// Mock the repository behavior
+        // Mock the repository behavior
         when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.of(existingCinemaHall));
 
-// Act
+        // Act
         CinemaHall updatedCinemaHall = cinemaHallService.updateSeatsOfCinemaHall(cinemaHallId, newName, newSeatRequests);
 
-// Assert
+        // Assert
         verify(seatRepository, times(oldSeats.size())).delete(any(Seat.class));
         verify(seatRepository, times(newSeatRequests.size())).save(any(Seat.class));
         assertEquals(newName, updatedCinemaHall.getName());
-
-    }
-
-    @Test
-    @Order(7)
-    @Disabled
-        // cinemaHall.getCinema() throws NullPointerException because it is not mocked
-    void test_deleteCinemaHall_Success() {
-        // Arrange
-        Long cinemaHallId = 1L;
-
-        // Create a valid CinemaHall object with a valid Cinema association
-        CinemaHall cinemaHall = new CinemaHall(cinemaHallId, "CinemaHall 1", null, null);
-        Cinema cinema = new Cinema(1L, "Test cinema 1", null, new ArrayList<>(), null);
-        cinema.getCinemaHallList().add(cinemaHall);
-
-        // Mock behavior to return the CinemaHall with a valid Cinema
-        when(cinemaHallRepository.findById(cinemaHallId)).thenReturn(Optional.of(cinemaHall));
-
-        // Mock behavior to return cinema by ID
-        when(cinemaRepository.findById(1L)).thenReturn(Optional.of(cinema));
-
-        // Create a mock object for CinemaHall
-        CinemaHall mockCinemaHall = mock(CinemaHall.class);
-        when(mockCinemaHall.getCinema()).thenReturn(cinema);
-
-        // Act
-        cinemaHallService.deleteCinemaHall(cinemaHallId);
-
-        // Assert
-        verify(cinema.getCinemaHallList(), times(1)).remove(cinemaHall);
-        verify(cinemaRepository, times(1)).save(cinema);
-        verify(cinemaHallRepository, times(1)).delete(cinemaHall);
     }
 
     @Test

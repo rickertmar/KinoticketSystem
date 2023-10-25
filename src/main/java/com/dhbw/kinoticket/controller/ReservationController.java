@@ -48,8 +48,6 @@ public class ReservationController {
             User user = userService.getUserByEmail(principal.getName());
             ReservationResponse response = reservationService.createReservation(request, user);
 
-            // TODO uncomment to activate email confirmation sending
-            /*
             emailService.sendHtmlEmail(
                     new EmailDetails(
                             user.getEmail(),
@@ -58,7 +56,6 @@ public class ReservationController {
                             null
                     )
             );
-            */
 
             return new ResponseEntity<>(response, HttpStatus.OK);
         } catch (Exception e) {

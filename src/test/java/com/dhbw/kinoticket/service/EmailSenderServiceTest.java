@@ -1,5 +1,12 @@
 package com.dhbw.kinoticket.service;
 
+import com.azure.communication.email.EmailClient;
+import com.azure.communication.email.models.EmailMessage;
+import com.azure.communication.email.models.EmailSendResult;
+import com.azure.communication.email.models.EmailSendStatus;
+import com.azure.core.util.polling.LongRunningOperationStatus;
+import com.azure.core.util.polling.PollResponse;
+import com.azure.core.util.polling.SyncPoller;
 import com.dhbw.kinoticket.entity.*;
 import com.dhbw.kinoticket.request.EmailDetails;
 import com.dhbw.kinoticket.response.MovieResponse;
@@ -13,6 +20,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
+import java.lang.reflect.Field;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
@@ -30,6 +39,9 @@ public class EmailSenderServiceTest {
     private JavaMailSender javaMailSender;
 
     @Mock
+    private EmailClient emailClient;
+
+    @Mock
     private ReservationResponse reservationResponse;
 
     @InjectMocks
@@ -37,13 +49,79 @@ public class EmailSenderServiceTest {
 
     @BeforeEach
     void setUp() {
-        emailSenderService = new EmailSenderService();
+        emailSenderService = new EmailSenderService(emailClient);
     }
 
+/*
+    @Test
+    @Disabled
+    void testSendHtmlEmailWhenInputIsValidThenReturnResult() throws NoSuchFieldException, IllegalAccessException {
+        // Arrange
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setRecipient("test@example.com");
+        emailDetails.setSubject("Test Subject");
+        emailDetails.setBody("Test Body");
+
+        EmailMessage message = new EmailMessage()
+                .setSenderAddress("<donotreply@0338e80f-c059-4474-8293-a3734f367eae.azurecomm.net>")
+                .setToRecipients(emailDetails.getRecipient())
+                .setSubject(emailDetails.getSubject())
+                .setBodyHtml(emailDetails.getBody());
+
+        EmailSendResult emailSendResult = new EmailSendResult(null, null, null);
+
+        // Use reflection to set the values
+        Field statusField = emailSendResult.getClass().getDeclaredField("status");
+        statusField.setAccessible(true);
+        statusField.set(emailSendResult, EmailSendStatus.SUCCEEDED);
+
+        Field idField = emailSendResult.getClass().getDeclaredField("id");
+        idField.setAccessible(true);
+        idField.set(emailSendResult, "testId");
+
+        SyncPoller<EmailSendResult, EmailSendResult> poller = mock(SyncPoller.class);
+        when(poller.getFinalResult()).thenReturn(emailSendResult);
+
+        // Mock the emailClient and return the poller
+        EmailClient emailClient = mock(EmailClient.class);
+        when(emailClient.beginSend(message, null)).thenReturn(poller);
+
+        // Create an instance of the EmailSenderService and pass the mocked emailClient
+        EmailSenderService emailSenderService = new EmailSenderService(emailClient);
+
+        // Act
+        String result = emailSenderService.sendHtmlEmail(emailDetails);
+
+        // Assert
+        assertEquals("Successfully sent the email (operation id: %stestId)", result);
+    }
 
     @Test
+    @Disabled
+    void testSendHtmlEmail_Failure() throws Exception {
+        // Create a sample EmailDetails
+        EmailDetails emailDetails = new EmailDetails();
+        emailDetails.setRecipient("recipient@example.com");
+        emailDetails.setSubject("Test Subject");
+        emailDetails.setBody("Test Body");
+
+        // Mock the behavior of EmailClient for a failure scenario
+        EmailSendResult emailSendResult = new EmailSendResult();
+        emailSendResult.setStatus(EmailSendStatus.FAILED);
+        emailSendResult.setError(new EmailSendError("Error Message"));
+
+
+        // Call the method under test
+        String result = emailSenderService.sendHtmlEmail(emailDetails);
+
+        // Assertions
+        String expected = "Error sending the email: " + emailSendResult.getError().getMessage();
+        Assertions.assertEquals(expected, result);
+    }
+*/
+    @Test
     @Order(1)
-    void testGenerateReservationEmailBodyPlainText() {
+    void test_GenerateReservationEmailBodyPlainText() {
         // Arrange
         when(reservationResponse.getMovie()).thenReturn(MovieResponse.builder()
                 .title("Movie Title")

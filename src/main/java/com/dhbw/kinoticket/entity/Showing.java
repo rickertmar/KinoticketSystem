@@ -20,7 +20,7 @@ public class Showing {
 
     private double seatPrice; // default price per seat
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="movie_id")
     private Movie movie; // running movie
 

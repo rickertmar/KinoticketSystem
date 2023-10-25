@@ -8,11 +8,13 @@ import com.dhbw.kinoticket.repository.MovieRepository;
 import com.dhbw.kinoticket.repository.ShowingRepository;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
 import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
+import com.dhbw.kinoticket.response.ShowingByMovieResponse;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -488,5 +490,72 @@ public class ShowingServiceTest {
 
         // Call the method under test and assert the exception
         assertThrows(EntityNotFoundException.class, () -> showingService.unblockSeatsOfShowing(request));
+    }
+
+    @Test
+    @Order(19)
+    public void testGetShowingsByMovieIdWhenMovieExistsThenReturnShowings() {
+        // Arrange
+        Long movieId = 1L;
+        List<Showing> mockShowings = new ArrayList<>();
+        mockShowings.add(Showing.builder().id(1L).movie(Movie.builder().id(1L).build()).showingExtras("3D").time(LocalDateTime.now()).build());
+        mockShowings.add(Showing.builder().id(2L).movie(Movie.builder().id(1L).build()).showingExtras("3D").time(LocalDateTime.now()).build());
+
+        // Mock
+        when(showingRepository.findAll()).thenReturn(mockShowings);
+
+        // Act
+        List<ShowingByMovieResponse> result = showingService.getShowingsByMovieId(movieId);
+
+        // Assert
+        assertEquals(2, result.size());
+        verify(showingRepository, times(1)).findAll();
+    }
+
+    @Test
+    @Order(20)
+    public void test_GetShowingsByMovieId_WhenMovieDoesNotExist_ThenThrowException() {
+        // Arrange
+        Long movieId = 1L;
+        when(movieRepository.existsById(movieId)).thenReturn(false);
+
+        // Act & Assert
+        assertThatThrownBy(() -> showingService.getShowingsByMovieId(movieId))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("No showing found for this movie.");
+        verify(showingRepository, times(1)).findAll();
+    }
+
+    @Test
+    @Order(21)
+    public void test_GetShowingsByMovieId_WhenNoShowingsForMovie_ThenThrowException() {
+        // Arrange
+        Long movieId = 1L;
+        when(movieRepository.existsById(movieId)).thenReturn(true);
+        when(showingRepository.findAll()).thenReturn(Collections.emptyList());
+
+        // Act & Assert
+        assertThatThrownBy(() -> showingService.getShowingsByMovieId(movieId))
+                .isInstanceOf(ResponseStatusException.class)
+                .hasMessageContaining("No showing found for this movie.");
+        verify(showingRepository, times(1)).findAll();
+    }
+
+    @Test
+    @Order(22)
+    public void test_ConvertToShowingByMovieResponse_WhenValidShowing_ThenReturnShowingByMovieResponse() {
+        // Arrange
+        Showing showing = new Showing();
+        showing.setId(1L);
+        showing.setTime(LocalDateTime.now());
+        showing.setShowingExtras("3D");
+
+        // Act
+        ShowingByMovieResponse response = showingService.convertToShowingByMovieResponse(showing);
+
+        // Assert
+        assertEquals(showing.getId(), response.getId());
+        assertEquals(showing.getTime(), response.getTime());
+        assertEquals(showing.getShowingExtras(), response.getShowingExtras());
     }
 }

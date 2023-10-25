@@ -183,7 +183,7 @@ public class CinemaController {
     // ----------------------------------------------------------------
 
     // Get all movies
-    @GetMapping(value = "/{cinemaId}/movies")
+    @GetMapping(value = "/movies")
     public ResponseEntity<?> getAllMovies() {
         try {
             return new ResponseEntity<>(movieService.getAllMovies(), HttpStatus.FOUND);
@@ -193,7 +193,7 @@ public class CinemaController {
     }
 
     // Get movie by id
-    @GetMapping(value = "/{cinemaId}/movies/{id}")
+    @GetMapping(value = "/movies/{id}")
     public ResponseEntity<?> getMovieById(@PathVariable Long id) {
         try {
             return new ResponseEntity<>(movieService.getMovieById(id), HttpStatus.FOUND);
@@ -216,7 +216,7 @@ public class CinemaController {
 
     // Delete movie by id and remove from associated cinema
     @PreAuthorize("hasAuthority('admin:delete')")
-    @DeleteMapping(value = "/{cinemaId}/movies/{movieId}")
+    @DeleteMapping(value = "/movies/{movieId}")
     public ResponseEntity<?> removeMovieById(@PathVariable Long movieId) {
         try {
             movieService.removeMovie(movieId);

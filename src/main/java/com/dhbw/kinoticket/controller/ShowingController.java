@@ -1,5 +1,6 @@
 package com.dhbw.kinoticket.controller;
 
+import com.azure.core.annotation.Get;
 import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
 import com.dhbw.kinoticket.service.CinemaHallService;
@@ -36,6 +37,16 @@ public class ShowingController {
         }
     }
 
+    // Get showings by movie id
+    @GetMapping(value = "/get-by-movie-id/{movieId}")
+    public ResponseEntity<?> getShowingsByMovieId(@PathVariable Long movieId) {
+        try {
+            return new ResponseEntity<>(showingService.getShowingsByMovieId(movieId), HttpStatus.FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     // Get movie by id
     @GetMapping(value = "/{id}")
     public ResponseEntity<?> getShowingById(@PathVariable Long id) {
@@ -47,7 +58,7 @@ public class ShowingController {
     }
 
     // Get seats of showing
-    @GetMapping(value = "/{id}/getSeats")
+    @GetMapping(value = "/{id}/get-seats")
     public ResponseEntity<?> getSeatsOfShowing(@PathVariable Long id) {
         try {
             Set<Seat> seats = showingService.getSeatsOfShowing(id);

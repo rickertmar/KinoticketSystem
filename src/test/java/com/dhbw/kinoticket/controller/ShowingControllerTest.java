@@ -3,6 +3,7 @@ package com.dhbw.kinoticket.controller;
 import com.dhbw.kinoticket.entity.Seat;
 import com.dhbw.kinoticket.entity.Showing;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
+import com.dhbw.kinoticket.response.ShowingByMovieResponse;
 import com.dhbw.kinoticket.service.CinemaHallService;
 import com.dhbw.kinoticket.service.ShowingService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -27,6 +28,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -104,7 +106,7 @@ class ShowingControllerTest {
         when(showingService.getSeatsOfShowing(1L)).thenReturn(seats);
 
         // Perform the GET request to the endpoint
-        mockMvc.perform(get("/showings/{id}/getSeats", 1L))
+        mockMvc.perform(get("/showings/{id}/get-seats", 1L))
                 .andExpect(status().isFound())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(1));
@@ -117,7 +119,7 @@ class ShowingControllerTest {
         when(showingService.getSeatsOfShowing(1L)).thenThrow(new EntityNotFoundException());
 
         // Perform the GET request to the endpoint
-        mockMvc.perform(get("/showings/{id}/getSeats", 1L))
+        mockMvc.perform(get("/showings/{id}/get-seats", 1L))
                 .andExpect(status().isNotFound());
     }
 
@@ -128,7 +130,7 @@ class ShowingControllerTest {
         when(showingService.getSeatsOfShowing(1L)).thenThrow(new RuntimeException());
 
         // Perform the GET request to the endpoint
-        mockMvc.perform(get("/showings/{id}/getSeats", 1L))
+        mockMvc.perform(get("/showings/{id}/get-seats", 1L))
                 .andExpect(status().isInternalServerError());
     }
 
@@ -186,6 +188,33 @@ class ShowingControllerTest {
         mockMvc.perform(delete("/showings/{showingId}", showingId))
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andDo(print());
+    }
+
+    @Test
+    @Order(9)
+    public void test_GetShowingsByMovieId_Success() throws Exception {
+        Long movieId = 1L;
+        List<ShowingByMovieResponse> showings = new ArrayList<>();
+        showings.add(ShowingByMovieResponse.builder().build());
+        showings.add(ShowingByMovieResponse.builder().build());
+
+        when(showingService.getShowingsByMovieId(movieId)).thenReturn(showings);
+
+        mockMvc.perform(get("/showings/get-by-movie-id/{movieId}", movieId))
+                .andExpect(status().isFound())
+                .andExpect(jsonPath("$", hasSize(showings.size())))
+                .andDo(print());
+    }
+
+    @Test
+    @Order(10)
+    public void test_GetShowingsByMovieId_NotFound() throws Exception {
+        Long movieId = 1L;
+
+        when(showingService.getShowingsByMovieId(movieId)).thenThrow(new RuntimeException());
+
+        mockMvc.perform(get("/get-by-movie-id/{movieId}", movieId))
+                .andExpect(status().isNotFound());
     }
 
 

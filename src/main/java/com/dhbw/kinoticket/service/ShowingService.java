@@ -110,19 +110,7 @@ public class ShowingService {
                 .build();
 
         Set<Seat> seats = getSeatsOfCinemaHall(request.getCinemaHallId());
-        Set<Seat> copiedSeats = new HashSet<>();
-        for (Seat seat : seats) {
-            Seat copiedSeat = Seat.builder()
-                    .seatRow(seat.getSeatRow())
-                    .number(seat.getNumber())
-                    .xLoc(seat.getXLoc())
-                    .yLoc(seat.getYLoc())
-                    .isBlocked(seat.isBlocked())
-                    .cinemaHall(cinemaHall)
-                    .build();
-            copiedSeats.add(copiedSeat);
-        }
-        showing.setSeats(copiedSeats);
+        showing.setSeats(seats);
 
         return showingRepository.save(showing);
     }

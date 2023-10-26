@@ -47,6 +47,7 @@ public class SecurityConfig {
             "/webjars/**",
             "/swagger-ui.html",
             "/showings",
+            "/showings/{id}",
             "/showings/**",
             "/cinemas/movies/**",
     };

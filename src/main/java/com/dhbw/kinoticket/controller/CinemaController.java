@@ -254,7 +254,7 @@ Add Seats to CinemaHall
         "number": 2,
         "xloc": 20,
         "yloc": 20,
-        "blocked": true
+        "blocked": false
     },
     {
         "seatRow": "A",

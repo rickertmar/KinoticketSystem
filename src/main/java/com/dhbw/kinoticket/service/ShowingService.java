@@ -8,14 +8,17 @@ import com.dhbw.kinoticket.repository.MovieRepository;
 import com.dhbw.kinoticket.repository.ShowingRepository;
 import com.dhbw.kinoticket.request.CreateShowingRequest;
 import com.dhbw.kinoticket.request.UpdateSeatStatusRequest;
+import com.dhbw.kinoticket.response.ShowingByMovieResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -37,6 +40,36 @@ public class ShowingService {
     // Get all showings
     public List<Showing> getAllShowings() {
         return showingRepository.findAll();
+    }
+
+    // Get showings by movie id
+    public List<ShowingByMovieResponse> getShowingsByMovieId(Long id) {
+        // Prepare lists
+        List<Showing> showings = showingRepository.findAll();
+        List<ShowingByMovieResponse> filteredShowings = new ArrayList<>();
+
+        // Add matching showings to filteredShowings list by movie id, after checking the existence of a movie
+        for (Showing showing : showings) {
+            if (showing.getMovie() != null && showing.getMovie().getId().equals(id)) {
+                ShowingByMovieResponse response = convertToShowingByMovieResponse(showing); // Convert to response with requested/needed attributes
+                filteredShowings.add(response);
+            }
+        }
+
+        // Check if result list is empty, like when no match is found
+        if (filteredShowings.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No showing found for this movie.");
+        }
+
+        return filteredShowings;
+    }
+
+    public ShowingByMovieResponse convertToShowingByMovieResponse(Showing showing) {
+        return ShowingByMovieResponse.builder()
+                .id(showing.getId())
+                .showingExtras(showing.getShowingExtras())
+                .time(showing.getTime())
+                .build();
     }
 
     // Get showing by id
@@ -77,19 +110,7 @@ public class ShowingService {
                 .build();
 
         Set<Seat> seats = getSeatsOfCinemaHall(request.getCinemaHallId());
-        Set<Seat> copiedSeats = new HashSet<>();
-        for (Seat seat : seats) {
-            Seat copiedSeat = Seat.builder()
-                    .seatRow(seat.getSeatRow())
-                    .number(seat.getNumber())
-                    .xLoc(seat.getXLoc())
-                    .yLoc(seat.getYLoc())
-                    .isBlocked(seat.isBlocked())
-                    .cinemaHall(cinemaHall)
-                    .build();
-            copiedSeats.add(copiedSeat);
-        }
-        showing.setSeats(copiedSeats);
+        showing.setSeats(seats);
 
         return showingRepository.save(showing);
     }

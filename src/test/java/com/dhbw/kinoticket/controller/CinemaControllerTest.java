@@ -313,7 +313,7 @@ public class CinemaControllerTest {
         when(movieService.getAllMovies()).thenReturn(movies);
 
         // Act and Assert
-        mockMvc.perform(get("/cinemas/{cinemaId}/movies", 1L))
+        mockMvc.perform(get("/cinemas/movies", 1L))
                 .andExpect(status().isFound())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].id").value(1))
@@ -333,7 +333,7 @@ public class CinemaControllerTest {
         when(movieService.getMovieById(1L)).thenReturn(movie);
 
         // Act and Assert
-        mockMvc.perform(get("/cinemas/{cinemaId}/movies/{id}", 1L, 1L))
+        mockMvc.perform(get("/cinemas/movies/{id}", 1L, 1L))
                 .andExpect(status().isFound())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.title").value("Movie 1"))
@@ -372,7 +372,7 @@ public class CinemaControllerTest {
     @Order(15)
     public void test_RemoveMovieById_ShouldDeleteAndRemoveMovie() throws Exception {
         // Act and Assert
-        mockMvc.perform(delete("/cinemas/{cinemaId}/movies/{movieId}", 1L, 1L))
+        mockMvc.perform(delete("/cinemas/movies/{movieId}", 1L, 1L))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Movie deleted."));
 

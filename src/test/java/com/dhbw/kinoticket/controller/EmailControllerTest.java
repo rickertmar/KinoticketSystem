@@ -8,25 +8,18 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.*;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -99,11 +92,11 @@ class EmailControllerTest {
         EmailDetails emailDetails = new EmailDetails(null, "test", "test", null);
 
         // Mock
-        when(emailService.sendHtmlMail(emailDetails))
+        when(emailService.sendHtmlMailMimeMessage(emailDetails))
                 .thenReturn("Mail sent successfully...");
 
         // Act and Assert
-        mockMvc.perform(post("/mail/sendHtmlMail")
+        mockMvc.perform(post("/mail/sendHtmlMailMimeMessage")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(emailDetails)))
                 .andExpect(status().isOk())
@@ -118,11 +111,11 @@ class EmailControllerTest {
         EmailDetails emailDetails = null;
 
         // Mock
-        when(emailService.sendHtmlMail(emailDetails))
+        when(emailService.sendHtmlMailMimeMessage(emailDetails))
                 .thenThrow(new RuntimeException("Mail sending failed"));
 
         // Act and Assert
-        mockMvc.perform(post("/mail/sendHtmlMail")
+        mockMvc.perform(post("/mail/sendHtmlMailMimeMessage")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(emailDetails)))
                 .andExpect(status().isBadRequest())

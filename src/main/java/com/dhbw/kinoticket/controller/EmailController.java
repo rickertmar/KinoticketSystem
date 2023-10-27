@@ -30,10 +30,20 @@ public class EmailController {
     }
 
     // Sending an Email with HTML content
-    @PostMapping("/sendHtmlMail")
-    public ResponseEntity<?> sendHtmlMail(@RequestBody EmailDetails details) {
+    @PostMapping("/sendHtmlEmail")
+    public ResponseEntity<?> sendHtmlEmail(@RequestBody EmailDetails details) {
         try {
-            return new ResponseEntity<>(emailService.sendHtmlMail(details), HttpStatus.OK);
+            return new ResponseEntity<>(emailService.sendHtmlEmail(details), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    // Sending an Email with HTML content using MimeMessage
+    @PostMapping("/sendHtmlMailMimeMessage")
+    public ResponseEntity<?> sendHtmlMailMimeMessage(@RequestBody EmailDetails details) {
+        try {
+            return new ResponseEntity<>(emailService.sendHtmlMailMimeMessage(details), HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
